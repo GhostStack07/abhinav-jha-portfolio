@@ -26,12 +26,27 @@ const DEFAULT_TWEAKS: Tweaks = {
 }
 
 export default function TweaksPanel() {
+  const [visible, setVisible] = useState(false)
   const [open, setOpen] = useState(false)
   const [tweaks, setTweaks] = useState<Tweaks>(DEFAULT_TWEAKS)
 
   useEffect(() => {
     applyTweaks(tweaks)
   }, [tweaks])
+
+  // Ctrl+Shift+T toggles the panel
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.ctrlKey && e.shiftKey && e.key === 'T') {
+        setVisible(v => {
+          if (v) setOpen(false)
+          return !v
+        })
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
 
   function applyTweaks(t: Tweaks) {
     const root = document.documentElement
@@ -72,6 +87,8 @@ export default function TweaksPanel() {
     { k: 'lilac', bg: '#c9a8ff' },
     { k: 'paper', bg: '#eae5d8' },
   ]
+
+  if (!visible) return null
 
   return (
     <>
