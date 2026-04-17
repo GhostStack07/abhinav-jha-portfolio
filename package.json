@@ -4,12 +4,22 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "migrate": "prisma db push"
   },
   "dependencies": {
+    "@libsql/client": "^0.17.2",
+    "@prisma/adapter-libsql": "^7.7.0",
+    "@prisma/adapter-pg": "^7.7.0",
+    "@prisma/client": "^7.7.0",
+    "@types/nodemailer": "^8.0.0",
+    "@types/pg": "^8.20.0",
     "next": "16.2.4",
+    "nodemailer": "^8.0.5",
+    "pg": "^8.20.0",
+    "prisma": "^7.7.0",
     "react": "19.2.4",
     "react-dom": "19.2.4"
   },
@@ -20,5 +30,8 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.4",
     "typescript": "^5"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }
