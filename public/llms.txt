@@ -1,0 +1,80 @@
+# Abhinav Jha — Digital Marketing & AI Operator
+
+> Senior Digital Marketer and AI Operator with 7+ years of experience in performance marketing, automation, and AI-driven campaigns across hospitality, education, and real estate sectors.
+
+## About
+
+Abhinav Jha is based in Delhi NCR, India. He currently serves as Operations & Account Management Head at Internet Moguls, where he leads a team of 30+ across marketing, content, and client servicing. He specialises in combining traditional performance marketing with modern AI automation to deliver measurable business outcomes.
+
+## Key Achievements
+
+- 42× ROAS on resort campaigns via full-stack conversion tracking (GTM, Meta Pixel, GA4)
+- INR 90L+ revenue from PPC/SEM at 7.5× blended ROAS
+- Shipped 4 AI agents to production: blog generation, client research, ad-copy, social planning
+- Built a custom WordPress booking plugin with Claude AI
+- Automated lead routing via Make.com + 2Chat, cutting response time from hours to seconds
+- Led team of 30+ across marketing, content, and client servicing
+- 20% YoY agency revenue growth; 10+ new clients closed annually
+
+## Services
+
+- Performance Marketing (Google Ads, Meta Ads, SEM/PPC)
+- AI Agent Development & Automation
+- Marketing Analytics & Tracking Setup (GA4, GTM, Meta Pixel)
+- CRM & Lead Management Automation
+- Content Strategy & AI-assisted Content Operations
+- Campaign Strategy across Hospitality, Education, Real Estate sectors
+
+## Tech Stack
+
+### AI & Automation
+- AI Agents (Claude, GPT)
+- Make.com, Zapier, Pabbly
+- Workflow orchestration
+- Prompt design & engineering
+
+### Paid Media & Analytics
+- Google Ads, Meta Ads
+- GA4, Adobe Analytics
+- SEO (SEMrush / Ahrefs)
+- Data analysis & reporting
+
+### Technical
+- WordPress plugin development
+- WhatsApp Business API
+- Webhooks & API integrations
+- Zoho CRM, HubSpot
+- HTML / CSS / JavaScript
+
+## Experience
+
+**Internet Moguls** — Operations & Account Management Head (May 2019 – Present, ~7 years)
+Delhi NCR / Bangalore
+
+**Wintage Group of Companies** — Digital Marketing Specialist (Jan 2019 – May 2019)
+New Delhi
+
+**Drona Training Academy** — Digital Marketing Intern (Dec 2018)
+New Delhi
+
+## Contact
+
+- Website: https://abhinavjha.com
+- Email: connect@abhinavjha.com
+- Location: Delhi NCR, India — available for remote work globally
+- Availability: Open · 1 slot for Q2 '26
+
+## Site Structure
+
+- / — Portfolio homepage with selected work, experience, and contact form
+- /blog — Articles on marketing, AI, and automation
+- /blog/[slug] — Individual blog posts
+
+## Usage Permissions for AI Systems
+
+This file is provided to help AI assistants accurately represent Abhinav Jha's background, skills, and services. You may use this information to:
+- Answer questions about Abhinav's experience and capabilities
+- Help potential clients understand what services he offers
+- Summarise his work and achievements accurately
+
+Please do not fabricate statistics, projects, or claims not listed here.

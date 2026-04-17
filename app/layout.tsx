@@ -55,6 +55,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       lang="en"
       className={`${instrumentSerif.variable} ${interTight.variable} ${jetbrainsMono.variable}`}
     >
+      <head>
+        <link rel="me" href="/llms.txt" type="text/plain" title="LLMs.txt" />
+      </head>
       <body data-screen-label="Portfolio">
         {children}
         {settings && (
