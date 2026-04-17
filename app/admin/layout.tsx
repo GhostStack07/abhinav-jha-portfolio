@@ -12,8 +12,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <div className="adm-shell">
       <aside className="adm-sidebar">
         <div className="adm-logo">
-          <span className="adm-logo-dot" />
-          AJ Admin
+          AJ<span className="adm-logo-dot"><span className="adm-dot-core" /><span className="adm-dot-ring" /><span className="adm-dot-ring adm-dot-ring-2" /></span>
         </div>
         <nav className="adm-nav">
           {NAV.map(({ href, label, icon }) => (

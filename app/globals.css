@@ -485,8 +485,13 @@
    ═══════════════════════════════════════════════ */
 .adm-shell { display: flex; min-height: 100vh; background: var(--bg); font-family: var(--mono); }
 .adm-sidebar { width: 200px; border-right: 1px solid var(--rule); padding: 28px 0; display: flex; flex-direction: column; gap: 2px; flex-shrink: 0; position: sticky; top: 0; height: 100vh; }
-.adm-logo { display: flex; align-items: center; gap: 10px; padding: 0 20px 28px; font-size: 13px; font-weight: 600; color: var(--ink); letter-spacing: 0.06em; }
-.adm-logo-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); animation: pulse 1.6s infinite; }
+.adm-logo { display: flex; align-items: center; gap: 3px; padding: 0 20px 28px; font-size: 20px; font-weight: 700; color: var(--ink); letter-spacing: 0.04em; font-family: var(--sans); }
+.adm-logo-dot { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 10px; height: 10px; margin-left: 1px; }
+.adm-dot-core { position: absolute; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 6px var(--accent), 0 0 12px var(--accent); animation: dotBreath 2.4s ease-in-out infinite; }
+.adm-dot-ring { position: absolute; width: 8px; height: 8px; border-radius: 50%; border: 1.5px solid var(--accent); opacity: 0; animation: dotRipple 2.4s ease-out infinite; }
+.adm-dot-ring-2 { animation-delay: 1.2s; }
+@keyframes dotBreath { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.15); opacity: 0.85; } }
+@keyframes dotRipple { 0% { transform: scale(1); opacity: 0.8; } 100% { transform: scale(3); opacity: 0; } }
 .adm-nav { display: flex; flex-direction: column; gap: 2px; flex: 1; }
 .adm-nav-link { display: flex; align-items: center; gap: 10px; padding: 9px 20px; font-size: 12px; color: var(--ink-dim); text-decoration: none; letter-spacing: 0.08em; transition: color 0.15s, background 0.15s; border-radius: 0; }
 .adm-nav-link:hover { color: var(--ink); background: var(--bg-1); }
@@ -630,8 +635,7 @@
    ═══════════════════════════════════════════════ */
 .login-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--bg); padding: 24px; }
 .login-card { width: 100%; max-width: 400px; background: var(--bg-1); border: 1px solid var(--rule); border-radius: 12px; padding: 40px; }
-.login-logo { display: flex; align-items: center; gap: 10px; font-family: var(--mono); font-size: 13px; font-weight: 600; color: var(--ink); letter-spacing: 0.06em; margin-bottom: 32px; }
-.login-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); animation: pulse 1.6s infinite; flex-shrink: 0; }
+.login-logo { display: flex; align-items: center; gap: 3px; font-family: var(--sans); font-size: 20px; font-weight: 700; color: var(--ink); letter-spacing: 0.04em; margin-bottom: 32px; }
 .login-title { font-family: var(--serif); font-size: 28px; font-style: italic; color: var(--ink); margin: 0 0 8px; }
 .login-sub { font-size: 13px; color: var(--ink-faint); margin: 0 0 28px; font-family: var(--mono); }
 .login-form { display: flex; flex-direction: column; gap: 16px; }
