@@ -4,7 +4,7 @@ import { PrismaClient } from '@/app/generated/prisma/client'
 function makePrisma() {
   const url = process.env.DATABASE_URL ?? ''
 
-  // Production: PostgreSQL (Railway provides a postgres:// DATABASE_URL)
+  // Production: PostgreSQL
   if (url.startsWith('postgres')) {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { Pool } = require('pg') as typeof import('pg')
@@ -24,8 +24,19 @@ function makePrisma() {
   return new PrismaClient({ adapter } as any)
 }
 
-const globalForPrisma = globalThis as unknown as { prisma: PrismaClient }
+const globalForPrisma = globalThis as unknown as { _prisma: PrismaClient | undefined }
 
-export const prisma = globalForPrisma.prisma ?? makePrisma()
+// Lazy getter — Prisma is not instantiated at module load (build) time,
+// only when first accessed at request time when DATABASE_URL is available.
+export function getPrisma(): PrismaClient {
+  if (!globalForPrisma._prisma) {
+    globalForPrisma._prisma = makePrisma()
+  }
+  return globalForPrisma._prisma
+}
 
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
+export const prisma = new Proxy({} as PrismaClient, {
+  get(_target, prop) {
+    return (getPrisma() as unknown as Record<string | symbol, unknown>)[prop]
+  },
+})
