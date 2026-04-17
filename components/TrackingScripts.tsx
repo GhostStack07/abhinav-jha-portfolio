@@ -1,5 +1,6 @@
 'use client'
 import Script from 'next/script'
+import { useEffect } from 'react'
 
 interface Props {
   gaMeasurementId?: string
@@ -53,9 +54,38 @@ fbq('track', 'PageView');`}
       )}
 
       {/* ── Custom head code ─────────────────── */}
-      {customHeadCode && (
-        <div dangerouslySetInnerHTML={{ __html: customHeadCode }} style={{ display: 'none' }} />
-      )}
+      {customHeadCode && <CustomScripts code={customHeadCode} />}
     </>
   )
+}
+
+// Properly executes <script> tags from raw HTML by appending them to <head>
+function CustomScripts({ code }: { code: string }) {
+  useEffect(() => {
+    const parser = new DOMParser()
+    const doc = parser.parseFromString(code, 'text/html')
+    const scripts = doc.querySelectorAll('script')
+
+    const cleanup: HTMLScriptElement[] = []
+
+    scripts.forEach(orig => {
+      const s = document.createElement('script')
+      if (orig.src) s.src = orig.src
+      if (orig.async) s.async = true
+      if (orig.defer) s.defer = true
+      if (!orig.src) s.textContent = orig.textContent
+      // copy any data attributes
+      Array.from(orig.attributes).forEach(attr => {
+        if (!['src', 'async', 'defer'].includes(attr.name)) {
+          s.setAttribute(attr.name, attr.value)
+        }
+      })
+      document.head.appendChild(s)
+      cleanup.push(s)
+    })
+
+    return () => cleanup.forEach(s => s.remove())
+  }, [code])
+
+  return null
 }
