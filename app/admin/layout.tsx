@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import LogoutButton from '@/components/LogoutButton'
 
 const NAV = [
   { href: '/admin', label: 'Leads', icon: '◈' },
@@ -22,9 +23,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </Link>
           ))}
         </nav>
-        <Link href="/" className="adm-nav-link adm-back" style={{ marginTop: 'auto' }}>
-          ← Live site
-        </Link>
+        <div className="adm-sidebar-footer">
+          <Link href="/" className="adm-nav-link adm-back">← Live site</Link>
+          <LogoutButton />
+        </div>
       </aside>
       <main className="adm-main">{children}</main>
     </div>
