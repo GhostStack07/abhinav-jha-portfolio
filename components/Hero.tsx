@@ -11,15 +11,14 @@ export default function Hero() {
         <span>2019 — present</span>
       </div>
 
-      <h1 className="display">
-        Marketing,<br />
-        <span className="i">but built</span><br />
-        <span className="hl">like&nbsp;software.</span>
-      </h1>
-
       <div className="hero-grid">
         <div>
-          <p className="hero-lede">
+          <h1 className="display">
+            Marketing,<br />
+            <span className="i">but built</span><br />
+            <span className="hl">like&nbsp;software.</span>
+          </h1>
+          <p className="hero-lede" style={{ marginTop: 40 }}>
             I&apos;m <em>Abhinav</em> — a senior digital marketer with 7+ years running performance
             marketing, automation, and AI-driven campaigns across hospitality, schools, and real estate.
             I&apos;ve built and shipped <em>4 production AI agents</em>, automated the manual out of

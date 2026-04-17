@@ -80,7 +80,7 @@
   }
 
   .hero-grid {
-    display: grid; grid-template-columns: 1.7fr 1fr; gap: 64px; align-items: end; margin-top: 56px;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: start; margin-top: 56px;
   }
   @media (max-width: 960px) { .hero-grid { grid-template-columns: 1fr; gap: 40px; } }
 
