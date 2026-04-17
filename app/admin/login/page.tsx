@@ -2,6 +2,7 @@
 import { useState, FormEvent } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'
+import AJLogo from '@/components/AJLogo'
 
 function LoginForm() {
   const router = useRouter()
@@ -35,7 +36,7 @@ function LoginForm() {
     <div className="login-page">
       <div className="login-card">
         <div className="login-logo">
-          AJ<span className="adm-logo-dot"><span className="adm-dot-core" /><span className="adm-dot-ring" /><span className="adm-dot-ring adm-dot-ring-2" /></span>
+          <AJLogo size="lg" />
         </div>
 
         <h1 className="login-title">Sign in</h1>

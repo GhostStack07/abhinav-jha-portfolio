@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import LogoutButton from '@/components/LogoutButton'
+import AJLogo from '@/components/AJLogo'
 
 const NAV = [
   { href: '/admin', label: 'Leads', icon: '◈' },
@@ -12,7 +13,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <div className="adm-shell">
       <aside className="adm-sidebar">
         <div className="adm-logo">
-          AJ<span className="adm-logo-dot"><span className="adm-dot-core" /><span className="adm-dot-ring" /><span className="adm-dot-ring adm-dot-ring-2" /></span>
+          <AJLogo href="/admin" size="md" />
         </div>
         <nav className="adm-nav">
           {NAV.map(({ href, label, icon }) => (
