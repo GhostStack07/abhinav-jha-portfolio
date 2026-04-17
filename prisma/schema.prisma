@@ -22,6 +22,42 @@ model Lead {
   budget    String?
   message   String?
 
-  status    String   @default("new")  // new | contacted | qualified | closed | spam
+  status    String   @default("new")
   notes     String?
+}
+
+model BlogPost {
+  id             Int       @id @default(autoincrement())
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  title          String
+  slug           String    @unique
+  excerpt        String?
+  content        String    @default("")
+  coverImage     String?
+  tags           String    @default("[]")
+  published      Boolean   @default(false)
+  publishedAt    DateTime?
+
+  // Per-post SEO
+  seoTitle       String?
+  seoDescription String?
+  seoImage       String?
+}
+
+// Singleton row (id = 1) — always upserted, never inserted fresh
+model SiteSettings {
+  id Int @id @default(1)
+
+  // ── Tracking ──────────────────────────────────
+  gaMeasurementId String @default("")   // GA4: G-XXXXXXXXXX
+  metaPixelId     String @default("")   // Meta Pixel ID
+  gtmId           String @default("")   // GTM-XXXXXXX
+  customHeadCode  String @default("")   // raw <script> tags
+
+  // ── Global SEO ────────────────────────────────
+  siteTitle       String @default("Abhinav Jha — Digital Marketing & AI Operator")
+  siteDescription String @default("Senior Digital Marketing Strategist with 7+ years leading performance marketing, automation, and AI-driven campaigns.")
+  siteOgImage     String @default("")
+  siteCanonical   String @default("")
 }
