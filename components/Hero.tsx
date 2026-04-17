@@ -45,7 +45,7 @@ export default function Hero() {
             <div className="portrait-bg" aria-hidden="true" />
             <div className="portrait-halo" aria-hidden="true" />
             <Image
-              src="/assets/abhinav-cyber.png"
+              src="/assets/aj.png"
               alt="Abhinav Jha"
               width={600}
               height={840}
@@ -53,7 +53,7 @@ export default function Hero() {
               priority
             />
             <Image
-              src="/assets/abhinav-cyber.png"
+              src="/assets/aj.png"
               alt=""
               aria-hidden
               width={600}
