@@ -1,4 +1,3 @@
-import Image from 'next/image'
 import Link from 'next/link'
 
 export default function Hero() {
@@ -44,20 +43,10 @@ export default function Hero() {
           <div className="portrait-card portrait-cinematic">
             <div className="portrait-bg" aria-hidden="true" />
             <div className="portrait-halo" aria-hidden="true" />
-            <Image
-              src="/assets/aj.png"
-              alt="Abhinav Jha"
-              fill
-              className="portrait-main"
-              priority
-            />
-            <Image
-              src="/assets/aj.png"
-              alt=""
-              aria-hidden
-              fill
-              className="portrait-ghost"
-            />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/assets/aj.png" alt="Abhinav Jha" className="portrait-main" />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/assets/aj.png" alt="" aria-hidden className="portrait-ghost" />
             <div className="portrait-grain" aria-hidden="true" />
             <div className="portrait-scan" aria-hidden="true" />
             <div className="portrait-grid" aria-hidden="true">
