@@ -47,8 +47,7 @@ export default function Hero() {
             <Image
               src="/assets/aj.png"
               alt="Abhinav Jha"
-              width={600}
-              height={840}
+              fill
               className="portrait-main"
               priority
             />
@@ -56,8 +55,7 @@ export default function Hero() {
               src="/assets/aj.png"
               alt=""
               aria-hidden
-              width={600}
-              height={840}
+              fill
               className="portrait-ghost"
             />
             <div className="portrait-grain" aria-hidden="true" />
