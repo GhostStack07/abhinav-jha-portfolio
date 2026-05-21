@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
+import { requireAuth } from '@/lib/auth'
 
 export async function POST(req: NextRequest) {
   try {
@@ -27,6 +28,8 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET() {
+  const unauthed = await requireAuth()
+  if (unauthed) return unauthed
   try {
     const leads = await prisma.lead.findMany({
       orderBy: { createdAt: 'desc' },

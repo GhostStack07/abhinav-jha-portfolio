@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
+import { requireAuth } from '@/lib/auth'
 
 async function getOrCreate() {
   return prisma.siteSettings.upsert({
@@ -19,6 +20,8 @@ export async function GET() {
 }
 
 export async function PATCH(req: Request) {
+  const unauthed = await requireAuth()
+  if (unauthed) return unauthed
   try {
     const body = await req.json()
     const settings = await prisma.siteSettings.upsert({

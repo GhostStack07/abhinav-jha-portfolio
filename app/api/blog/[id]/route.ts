@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
+import { requireAuth } from '@/lib/auth'
 
 export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -13,6 +14,8 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
 }
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const unauthed = await requireAuth()
+  if (unauthed) return unauthed
   const { id } = await params
   try {
     const body = await req.json()
@@ -25,6 +28,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 }
 
 export async function DELETE(_: Request, { params }: { params: Promise<{ id: string }> }) {
+  const unauthed = await requireAuth()
+  if (unauthed) return unauthed
   const { id } = await params
   try {
     await prisma.blogPost.delete({ where: { id: Number(id) } })

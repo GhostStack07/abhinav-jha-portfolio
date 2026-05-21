@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
+import { requireAuth } from '@/lib/auth'
 
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const unauthed = await requireAuth()
+  if (unauthed) return unauthed
   const { id } = await params
   try {
     const body = await req.json()
@@ -25,6 +28,8 @@ export async function DELETE(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const unauthed = await requireAuth()
+  if (unauthed) return unauthed
   const { id } = await params
   try {
     await prisma.lead.delete({ where: { id: Number(id) } })
