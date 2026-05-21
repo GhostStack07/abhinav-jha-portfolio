@@ -3,6 +3,7 @@ import { Instrument_Serif, Inter_Tight, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
 import TrackingScripts from '@/components/TrackingScripts'
 import { prisma } from '@/lib/db'
+import { SpeedInsights } from '@vercel/speed-insights/next'
 
 const instrumentSerif = Instrument_Serif({
   weight: ['400'],
@@ -68,6 +69,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             customHeadCode={settings.customHeadCode || undefined}
           />
         )}
+        <SpeedInsights />
       </body>
     </html>
   )
