@@ -1,0 +1,150 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/* ─── OPERATION: FREEDOM 2026 — scoped styles ─── */
+/* All styles are scoped under .freedom-root to avoid leaking into the portfolio */
+
+.freedom-root {
+  --background: #09090b;
+  --foreground: #ffffff;
+  --card: #111113;
+  --card-foreground: #ffffff;
+  --popover: #111113;
+  --popover-foreground: #ffffff;
+  --primary: #d4af37;
+  --primary-foreground: #09090b;
+  --secondary: #1a1a1e;
+  --secondary-foreground: #ffffff;
+  --muted: #1a1a1e;
+  --muted-foreground: #71717a;
+  --accent: #d4af37;
+  --accent-foreground: #09090b;
+  --destructive: #ef4444;
+  --border: #232329;
+  --input: #232329;
+  --ring: #d4af37;
+  --radius: 0.75rem;
+  /* Override portfolio body constraints */
+  display: block !important;
+  width: 100vw !important;
+  min-height: 100vh;
+  margin: 0 !important;
+  padding: 0 !important;
+  background-color: #09090b;
+  color: #ffffff;
+  font-family: var(--font-geist), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Restore cursor hidden by portfolio */
+  cursor: auto !important;
+  position: relative;
+  left: 0;
+  overflow-x: hidden;
+}
+
+/* Reset body overrides from portfolio for this subtree */
+.freedom-root * {
+  box-sizing: border-box;
+}
+
+.freedom-root .gold-gradient {
+  background: linear-gradient(135deg, #d4af37 0%, #f5d97a 50%, #d4af37 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.freedom-root .glass {
+  background: rgba(17, 17, 19, 0.85);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+
+.freedom-root .glass-hover {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+.freedom-root .glass-hover:hover {
+  border-color: rgba(212, 175, 55, 0.35) !important;
+  box-shadow: 0 0 28px rgba(212, 175, 55, 0.08);
+  background: rgba(212, 175, 55, 0.04) !important;
+}
+
+.freedom-root .gold-glow {
+  box-shadow: 0 0 24px rgba(212, 175, 55, 0.18), 0 0 48px rgba(212, 175, 55, 0.06);
+}
+
+.freedom-root .success-glow {
+  box-shadow: 0 0 20px rgba(34, 197, 94, 0.2);
+}
+
+.freedom-root .grid-bg {
+  background-image:
+    linear-gradient(rgba(35, 35, 41, 0.4) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(35, 35, 41, 0.4) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+.freedom-root .ring-progress {
+  transition: stroke-dashoffset 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.freedom-root .pulse-dot {
+  animation: freedom-pulseDot 2s ease-in-out infinite;
+}
+
+.freedom-root .flame {
+  animation: freedom-flicker 1.5s ease-in-out infinite;
+  display: inline-block;
+}
+
+.freedom-root .heatmap-cell {
+  transition: transform 0.15s ease;
+  cursor: pointer;
+}
+.freedom-root .heatmap-cell:hover {
+  transform: scale(1.4);
+  z-index: 10;
+  position: relative;
+}
+
+.freedom-root .shimmer {
+  background: linear-gradient(90deg, #111113 25%, #1a1a1e 50%, #111113 75%);
+  background-size: 200% 100%;
+  animation: freedom-shimmer 1.5s infinite;
+}
+
+@keyframes freedom-pulseDot {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.4); opacity: 0.6; }
+}
+
+@keyframes freedom-flicker {
+  0%, 100% { transform: scale(1) rotate(-1deg); }
+  50% { transform: scale(1.05) rotate(1deg); }
+}
+
+@keyframes freedom-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes freedom-countUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.freedom-root .count-up {
+  animation: freedom-countUp 0.4s ease forwards;
+}
+
+/* Scrollbar */
+.freedom-root ::-webkit-scrollbar { width: 4px; height: 4px; }
+.freedom-root ::-webkit-scrollbar-track { background: transparent; }
+.freedom-root ::-webkit-scrollbar-thumb { background: #232329; border-radius: 2px; }
+.freedom-root ::-webkit-scrollbar-thumb:hover { background: #d4af37; }
+
+/* cmdk command palette */
+.freedom-root [cmdk-root] {
+  background: #0d0d0f;
+  border-radius: 1rem;
+  overflow: hidden;
+}
