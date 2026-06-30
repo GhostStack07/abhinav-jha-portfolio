@@ -63,8 +63,8 @@ export function GoalCard({
           <h3 className="font-semibold text-sm text-white truncate group-hover:text-[#d4af37] transition-colors">
             {name}
           </h3>
-          <p className="text-xs text-zinc-500 mt-0.5">
-            {current} / {target} {unit}
+          <p className="text-xs text-zinc-500 mt-0.5 truncate">
+            {current.toLocaleString()} / {target.toLocaleString()} {unit}
           </p>
         </div>
       </div>

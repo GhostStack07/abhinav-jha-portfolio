@@ -149,14 +149,27 @@ export const INITIAL_STATE: AppState = {
   journal: [],
 
   achievements: [
+    // — Career & Work —
+    { id: "first-ai-project", title: "AI Builder", description: "Complete your first AI project", icon: "🤖", unlocked: false },
     { id: "first-client", title: "First Client", description: "Land your first paying client", icon: "👤", unlocked: false },
-    { id: "10-workouts", title: "Iron Will", description: "Complete 10 workouts", icon: "💪", unlocked: false },
     { id: "100-linkedin", title: "Networker", description: "Reach 100 LinkedIn followers", icon: "🔗", unlocked: false },
-    { id: "first-ai-project", title: "AI Builder", description: "Complete first AI project", icon: "🤖", unlocked: false },
-    { id: "1l-earned", title: "Lakhpati", description: "Earn ₹1 Lakh", icon: "💰", unlocked: false },
-    { id: "swimming-500m", title: "Swimmer", description: "Swim 500 meters", icon: "🏊", unlocked: false },
-    { id: "drone-certified", title: "Drone Pilot", description: "Obtain drone license", icon: "🚁", unlocked: false },
-    { id: "director", title: "Leader", description: "Reach Director readiness 80%+", icon: "🎯", unlocked: false },
     { id: "side-hustle-launched", title: "Entrepreneur", description: "Launch your side hustle", icon: "🚀", unlocked: false },
+    { id: "director", title: "Leader", description: "Reach Director readiness 80%+", icon: "🎯", unlocked: false },
+    // — Wealth —
+    { id: "1l-earned", title: "Lakhpati", description: "Earn ₹1 Lakh total", icon: "💰", unlocked: false },
+    // — Fitness & Sport —
+    { id: "10-workouts", title: "Iron Will", description: "Complete 10 gym workouts", icon: "💪", unlocked: false },
+    { id: "swimming-500m", title: "Swimmer", description: "Complete the 500m swim level", icon: "🏊", unlocked: false },
+    { id: "smash-master", title: "Smash Master", description: "Complete all 24 badminton sessions", icon: "🏸", unlocked: false },
+    // — Learning —
+    { id: "first-book", title: "Book Worm", description: "Finish your first book", icon: "📚", unlocked: false },
+    { id: "reading-streak-5", title: "Page Turner", description: "5-day reading streak", icon: "🔥", unlocked: false },
+    // — Lifestyle —
+    { id: "first-journal", title: "Journaler", description: "Write your first daily reflection", icon: "✍️", unlocked: false },
+    { id: "morning-warrior", title: "Morning Warrior", description: "Complete all 7 habits in a single day", icon: "🧘", unlocked: false },
+    // — Mission —
+    { id: "halfway-there", title: "Halfway There", description: "Reach 50% overall mission progress", icon: "⚡", unlocked: false },
+    { id: "drone-certified", title: "Drone Pilot", description: "Obtain your DGCA drone license", icon: "🚁", unlocked: false },
+    { id: "wanderlust", title: "Wanderlust", description: "Complete the December trip checklist", icon: "✈️", unlocked: false },
   ],
 };

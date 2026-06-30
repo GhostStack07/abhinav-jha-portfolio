@@ -204,13 +204,16 @@ function FreedomContent() {
 
       {/* Tab navigation */}
       <div className="sticky top-0 z-30 bg-[#09090b]/95 backdrop-blur-xl border-b border-[#232329]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <nav className="flex gap-1 overflow-x-auto py-2" style={{ scrollbarWidth: "none" }}>
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+          <nav
+            className="flex gap-1 overflow-x-auto py-2"
+            style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch" } as React.CSSProperties}
+          >
             {TABS.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all duration-150 ${
+                className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-medium whitespace-nowrap transition-all duration-150 ${
                   activeTab === tab.id
                     ? "bg-[#d4af37]/15 text-[#d4af37] border border-[#d4af37]/30"
                     : "text-zinc-500 hover:text-zinc-300 hover:bg-white/5"
@@ -224,10 +227,10 @@ function FreedomContent() {
         </div>
       </div>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <main className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-10">
         {activeTab === "goals" && (
           <motion.div key="goals" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
               {GOALS.map((goal, i) => (
                 <GoalCard
                   key={goal.id}
