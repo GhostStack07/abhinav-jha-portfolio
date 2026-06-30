@@ -13,6 +13,7 @@ import { DroneModal } from "./drone";
 import { DirectorModal } from "./director";
 import { DecemberTripModal } from "./december-trip";
 import { SideHustleModal } from "./side-hustle";
+import { BookReadingModal } from "./book-reading";
 
 const MODAL_MAP: Record<GoalId, React.ComponentType<{ onClose: () => void }>> = {
   "ai-engineer": AIEngineerModal,
@@ -25,6 +26,7 @@ const MODAL_MAP: Record<GoalId, React.ComponentType<{ onClose: () => void }>> = 
   director: DirectorModal,
   "december-trip": DecemberTripModal,
   "side-hustle": SideHustleModal,
+  "book-reading": BookReadingModal,
 };
 
 interface GoalModalProps {

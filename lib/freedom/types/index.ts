@@ -10,11 +10,18 @@ export type GoalId =
   | "drone"
   | "director"
   | "december-trip"
-  | "side-hustle";
+  | "side-hustle"
+  | "book-reading";
 
 export interface ChecklistItem {
   id: string;
   label: string;
+  completed: boolean;
+}
+
+export interface BookEntry {
+  id: string;
+  title: string;
   completed: boolean;
 }
 
@@ -94,6 +101,15 @@ export interface SideHustleData {
   revenueHistory: { month: string; revenue: number }[];
 }
 
+export interface BookReadingData {
+  targetBooks: number;
+  dailyPageGoal: number;
+  pagesReadToday: number;
+  totalPagesRead: number;
+  readingStreak: number;
+  books: BookEntry[];
+}
+
 export interface GoalData {
   "ai-engineer": AIEngineerData;
   "ai-consultant": AIConsultantData;
@@ -105,6 +121,7 @@ export interface GoalData {
   director: DirectorData;
   "december-trip": DecemberTripData;
   "side-hustle": SideHustleData;
+  "book-reading": BookReadingData;
 }
 
 export interface HabitEntry {

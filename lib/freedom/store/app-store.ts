@@ -84,6 +84,13 @@ function computeMissionProgress(state: AppState): number {
   total += sh.length;
   completed += sh.filter((s) => s.completed).length;
 
+  // Book Reading: books finished vs target (12 over 6 months)
+  const br = state.goals["book-reading"];
+  total += 10;
+  completed += Math.round(
+    Math.min(br.books.filter((b) => b.completed).length / br.targetBooks, 1) * 10
+  );
+
   return total > 0 ? Math.round((completed / total) * 100) : 0;
 }
 

@@ -150,6 +150,20 @@ const GOALS: {
     accentColor: "#22c55e",
     estimatedCompletion: new Date("2026-08-01"),
   },
+  {
+    id: "book-reading",
+    icon: "📚",
+    name: "Book Reading",
+    getProgress: (s) => {
+      const g = s.goals["book-reading"];
+      return Math.min(Math.round((g.books.filter((b) => b.completed).length / g.targetBooks) * 100), 100);
+    },
+    getTarget: (s) => s.goals["book-reading"].targetBooks,
+    getCurrent: (s) => s.goals["book-reading"].books.filter((b) => b.completed).length,
+    unit: "books",
+    accentColor: "#ec4899",
+    estimatedCompletion: new Date("2026-12-01"),
+  },
 ];
 
 const TABS = [

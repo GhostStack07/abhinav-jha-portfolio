@@ -132,6 +132,17 @@ export const INITIAL_STATE: AppState = {
       ],
       revenueHistory: [],
     },
+
+    "book-reading": {
+      // Intermediate reader pace: ~20 pages/day clears a ~280pg book in 2 weeks
+      // → roughly 2 books/month → 12 books across the 6-month mission.
+      targetBooks: 12,
+      dailyPageGoal: 20,
+      pagesReadToday: 0,
+      totalPagesRead: 0,
+      readingStreak: 0,
+      books: [],
+    },
   },
 
   habits: [],

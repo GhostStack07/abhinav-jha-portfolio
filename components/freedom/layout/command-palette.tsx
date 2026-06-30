@@ -9,21 +9,24 @@ import {
   Star, Plane, Rocket, Calendar, BookOpen, Target, Trophy,
 } from "lucide-react";
 
+const BASE = "/operation-freedom";
+
 const COMMANDS = [
-  { id: "dashboard", label: "Dashboard", icon: Target, href: "/" },
-  { id: "ai-engineer", label: "AI Engineer Goal", icon: Bot, href: "/?goal=ai-engineer" },
-  { id: "ai-consultant", label: "AI Consultant Goal", icon: Users, href: "/?goal=ai-consultant" },
-  { id: "wealth", label: "₹30 Lakhs Goal", icon: DollarSign, href: "/?goal=wealth" },
-  { id: "fitness", label: "Lean & Fit Goal", icon: Dumbbell, href: "/?goal=fitness" },
-  { id: "swimming", label: "Swimming Goal", icon: Waves, href: "/?goal=swimming" },
-  { id: "badminton", label: "Badminton Goal", icon: Swords, href: "/?goal=badminton" },
-  { id: "drone", label: "Drone Pilot Goal", icon: Radio, href: "/?goal=drone" },
-  { id: "director", label: "Director Goal", icon: Star, href: "/?goal=director" },
-  { id: "december-trip", label: "December Trip Goal", icon: Plane, href: "/?goal=december-trip" },
-  { id: "side-hustle", label: "Side Hustle Goal", icon: Rocket, href: "/?goal=side-hustle" },
-  { id: "habits", label: "Habit Tracker", icon: Calendar, href: "/?tab=habits" },
-  { id: "journal", label: "Daily Journal", icon: BookOpen, href: "/?tab=journal" },
-  { id: "achievements", label: "Achievements", icon: Trophy, href: "/?tab=achievements" },
+  { id: "dashboard", label: "Dashboard", icon: Target, href: BASE },
+  { id: "ai-engineer", label: "AI Engineer Goal", icon: Bot, href: `${BASE}?goal=ai-engineer` },
+  { id: "ai-consultant", label: "AI Consultant Goal", icon: Users, href: `${BASE}?goal=ai-consultant` },
+  { id: "wealth", label: "₹30 Lakhs Goal", icon: DollarSign, href: `${BASE}?goal=wealth` },
+  { id: "fitness", label: "Lean & Fit Goal", icon: Dumbbell, href: `${BASE}?goal=fitness` },
+  { id: "swimming", label: "Swimming Goal", icon: Waves, href: `${BASE}?goal=swimming` },
+  { id: "badminton", label: "Badminton Goal", icon: Swords, href: `${BASE}?goal=badminton` },
+  { id: "drone", label: "Drone Pilot Goal", icon: Radio, href: `${BASE}?goal=drone` },
+  { id: "director", label: "Director Goal", icon: Star, href: `${BASE}?goal=director` },
+  { id: "december-trip", label: "December Trip Goal", icon: Plane, href: `${BASE}?goal=december-trip` },
+  { id: "side-hustle", label: "Side Hustle Goal", icon: Rocket, href: `${BASE}?goal=side-hustle` },
+  { id: "book-reading", label: "Book Reading Goal", icon: BookOpen, href: `${BASE}?goal=book-reading` },
+  { id: "habits", label: "Habit Tracker", icon: Calendar, href: `${BASE}?tab=habits` },
+  { id: "journal", label: "Daily Journal", icon: BookOpen, href: `${BASE}?tab=journal` },
+  { id: "achievements", label: "Achievements", icon: Trophy, href: `${BASE}?tab=achievements` },
 ];
 
 export function CommandPalette() {
