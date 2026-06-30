@@ -214,7 +214,22 @@ export const useAppStore = create<AppStore>()(
     }),
     {
       name: "freedom-2026-storage",
-      version: 1,
+      version: 2,
+      // When stored version < current version, merge in any newly added goal fields
+      // so existing users' localStorage doesn't crash on new goal additions.
+      migrate: (stored: unknown, version: number) => {
+        const s = stored as Record<string, unknown> & { goals?: Record<string, unknown> };
+        if (version < 2) {
+          return {
+            ...s,
+            goals: {
+              ...s.goals,
+              "book-reading": INITIAL_STATE.goals["book-reading"],
+            },
+          };
+        }
+        return s;
+      },
     }
   )
 );
