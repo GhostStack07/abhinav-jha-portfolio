@@ -202,22 +202,30 @@ function FreedomContent() {
     <div className="min-h-screen bg-[#09090b]">
       <HeroHeader />
 
-      {/* Tab navigation */}
-      <div className="sticky top-0 z-30 bg-[#09090b]/95 backdrop-blur-xl border-b border-[#232329]">
+      {/* Tab navigation — portfolio editorial style */}
+      <div
+        className="sticky top-0 z-30 backdrop-blur-xl"
+        style={{ background: "rgba(13,12,10,0.96)", borderBottom: "1px solid var(--rule)" }}
+      >
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
           <nav
-            className="flex gap-1 overflow-x-auto py-2"
+            className="flex gap-0.5 overflow-x-auto py-2"
             style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch" } as React.CSSProperties}
           >
             {TABS.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-medium whitespace-nowrap transition-all duration-150 ${
-                  activeTab === tab.id
-                    ? "bg-[#d4af37]/15 text-[#d4af37] border border-[#d4af37]/30"
-                    : "text-zinc-500 hover:text-zinc-300 hover:bg-white/5"
-                }`}
+                className="flex items-center gap-1.5 px-3 py-2 rounded whitespace-nowrap transition-all duration-150"
+                style={{
+                  fontFamily: "var(--font-mono, 'JetBrains Mono', monospace)",
+                  fontSize: "11px",
+                  letterSpacing: "0.08em",
+                  fontWeight: activeTab === tab.id ? 500 : 400,
+                  color: activeTab === tab.id ? "var(--gold)" : "var(--ink-dim)",
+                  background: activeTab === tab.id ? "rgba(212,175,55,0.08)" : "transparent",
+                  border: activeTab === tab.id ? "1px solid rgba(212,175,55,0.25)" : "1px solid transparent",
+                }}
               >
                 {tab.icon}
                 {tab.label}
@@ -303,12 +311,14 @@ function VisionBoard() {
       <div className="mb-6 flex items-center gap-3">
         <button
           onClick={() => setZoom((z) => Math.max(0.5, +(z - 0.1).toFixed(1)))}
-          className="w-9 h-9 rounded-lg border border-[#232329] flex items-center justify-center text-zinc-400 hover:text-white hover:border-[#d4af37]/50 transition-colors text-lg"
+          className="w-9 h-9 rounded flex items-center justify-center text-lg transition-colors"
+          style={{ border: "1px solid var(--rule)", color: "var(--ink-dim)", background: "var(--bg-1)" }}
         >−</button>
-        <span className="text-sm text-zinc-500 w-12 text-center">{Math.round(zoom * 100)}%</span>
+        <span className="font-mono text-xs w-12 text-center" style={{ color: "var(--ink-dim)" }}>{Math.round(zoom * 100)}%</span>
         <button
           onClick={() => setZoom((z) => Math.min(2, +(z + 0.1).toFixed(1)))}
-          className="w-9 h-9 rounded-lg border border-[#232329] flex items-center justify-center text-zinc-400 hover:text-white hover:border-[#d4af37]/50 transition-colors text-lg"
+          className="w-9 h-9 rounded flex items-center justify-center text-lg transition-colors"
+          style={{ border: "1px solid var(--rule)", color: "var(--ink-dim)", background: "var(--bg-1)" }}
         >+</button>
       </div>
       <div className="overflow-auto w-full flex justify-center">
@@ -318,13 +328,16 @@ function VisionBoard() {
           className="origin-top w-full max-w-4xl"
         >
           <div
-            className="rounded-3xl border border-[#d4af37]/20 bg-gradient-to-br from-[#111113] via-[#0d0d0f] to-[#111113] p-12 text-center"
-            style={{ boxShadow: "0 0 80px rgba(212,175,55,0.08)" }}
+            className="rounded-2xl p-10 text-center glass"
+            style={{
+              border: "1px solid rgba(212,175,55,0.2)",
+              boxShadow: "0 0 80px rgba(212,175,55,0.08)",
+            }}
           >
             <div className="text-6xl mb-6">🌟</div>
-            <h1 className="text-5xl font-black gold-gradient mb-4">VISION 2026</h1>
-            <p className="text-zinc-400 text-xl mb-12">This is what freedom looks like.</p>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-5 text-left">
+            <h1 className="font-serif text-5xl italic gold-gradient mb-3">Vision 2026</h1>
+            <p className="label-mono mb-10">This is what freedom looks like.</p>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-left">
               {[
                 { emoji: "🤖", title: "AI Engineer", desc: "10 live AI projects. Real impact." },
                 { emoji: "🧠", title: "AI Consultant", desc: "5 paying clients. Known expert." },
@@ -341,15 +354,16 @@ function VisionBoard() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.08 }}
-                  className="p-4 rounded-2xl border border-[#232329] bg-[#111113]/50 hover:border-[#d4af37]/30 transition-colors"
+                  className="p-4 rounded-lg glass-hover"
+                  style={{ border: "1px solid var(--rule)", background: "rgba(20,18,16,0.5)" }}
                 >
-                  <div className="text-3xl mb-2">{item.emoji}</div>
-                  <h3 className="text-sm font-bold text-[#d4af37]">{item.title}</h3>
-                  <p className="text-xs text-zinc-500 mt-1">{item.desc}</p>
+                  <div className="text-2xl mb-2">{item.emoji}</div>
+                  <h3 className="font-mono text-xs tracking-widest uppercase mb-1" style={{ color: "var(--gold)" }}>{item.title}</h3>
+                  <p className="text-xs leading-relaxed" style={{ color: "var(--ink-dim)" }}>{item.desc}</p>
                 </motion.div>
               ))}
             </div>
-            <p className="mt-12 text-sm text-zinc-600 italic">
+            <p className="mt-10 font-serif text-sm italic" style={{ color: "var(--ink-faint)" }}>
               "The best time to plant a tree was 20 years ago. The second best time is now."
             </p>
           </div>
