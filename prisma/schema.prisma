@@ -45,6 +45,17 @@ model BlogPost {
   seoImage       String?
 }
 
+// Client size presets for the Smart Resize tool (app/tools/smart-resize).
+// Seeded rows are the built-in clients — protected from edit/delete via the API.
+model ToolPreset {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  name      String   @unique
+  sizes     String   @default("[]") // JSON: [{ w, h, label? }]
+  seeded    Boolean  @default(false)
+}
+
 // Singleton row (id = 1) — always upserted, never inserted fresh
 model SiteSettings {
   id Int @id @default(1)

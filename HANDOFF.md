@@ -102,12 +102,17 @@ ships a shared database.
 - Accepted: no-cookie visit shows the code prompt; correct code unlocks
   for the browser session.
 
-### Task 3 — Shared preset database
-- Replace localStorage preset functions with Supabase (free tier) or
-  Vercel KV. Keep the same function signatures.
-- Accept: a preset saved by one team member appears for all others;
-  built-in presets migrate into the DB as seed data; delete protection for
-  seeded clients.
+### Task 3 — Shared preset database ✅ shipped 2026-07-18
+- Used the site's existing Neon Postgres + Prisma instead of adding
+  Supabase/KV (AJ approved the swap). `ToolPreset` model in
+  prisma/schema.prisma; API at `/api/tools/presets` (GET seeds built-ins
+  on first read; POST upserts; DELETE removes). Requires the tool session
+  cookie; seeded rows return 403 on overwrite/delete.
+- page.tsx preset functions swapped from localStorage to fetch calls
+  (`fetchPresets` / `savePresetReq` / `deletePresetReq`) — still the only
+  swap point; UI unchanged otherwise.
+- Accepted: presets are shared across all team members; built-ins seeded
+  into the DB; seeded clients protected from edit/delete.
 
 ### Task 4 (conditional) — YOLO crop engine
 - Only if the team reports smartcrop missing subjects. Implement as an

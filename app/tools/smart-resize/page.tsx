@@ -44,28 +44,10 @@ const DEFAULT_SIZES: SizeDef[] = [
   { w: 400, h: 300, on: false },
 ];
 
-const BUILT_IN: Record<string, { w: number; h: number; label: string }[]> = {
-  "Royal Orchid": [
-    { w: 1366, h: 565, label: "Banner" },
-    { w: 600, h: 500, label: "Overview" },
-    // One 671×358 output serves all four site sections (same pixels = same file)
-    { w: 671, h: 358, label: "Accommodation / Dine / Meetings & Events / In & Around" },
-    { w: 800, h: 400, label: "Gallery" },
-    { w: 452, h: 440, label: "City Page" },
-  ],
-  "Suba Hotels": [
-    { w: 1349, h: 600, label: "Overview Banner" },
-    { w: 1160, h: 440, label: "Overview Dining" },
-    // One 1280×800 output serves both sections
-    { w: 1280, h: 800, label: "Accommodation / Dining" },
-    { w: 855, h: 470, label: "Meetings & Events" },
-    { w: 716, h: 560, label: "Meetings & Events (alt)" },
-    { w: 700, h: 560, label: "Gallery" },
-    { w: 356, h: 280, label: "Hotel Card" },
-  ],
-};
-
-const STORE_KEY = "smart-resize-client-presets";
+// Client presets live in the shared database — see app/api/tools/presets.
+// Seeded (built-in) clients are edit/delete-protected server-side.
+type PresetSize = { w: number; h: number; label?: string | null };
+type PresetRow = { name: string; sizes: PresetSize[]; seeded: boolean };
 
 // ---------- pure helpers ----------
 function baseName(name: string): string {
@@ -82,21 +64,26 @@ function sectionSlugs(label?: string | null): string[] {
     .filter(Boolean);
 }
 
-function loadSavedPresets(): Record<string, { w: number; h: number; label?: string }[]> {
-  try {
-    const raw = window.localStorage.getItem(STORE_KEY);
-    return raw ? JSON.parse(raw) : {};
-  } catch {
-    return {};
-  }
+async function fetchPresets(): Promise<PresetRow[]> {
+  const res = await fetch("/api/tools/presets");
+  if (!res.ok) throw new Error("Could not load presets");
+  return res.json();
 }
 
-function saveSavedPresets(obj: Record<string, { w: number; h: number; label?: string }[]>) {
-  try {
-    window.localStorage.setItem(STORE_KEY, JSON.stringify(obj));
-  } catch {
-    /* storage unavailable — presets stay session-only */
-  }
+function savePresetReq(name: string, sizes: PresetSize[]): Promise<Response> {
+  return fetch("/api/tools/presets", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name, sizes }),
+  });
+}
+
+function deletePresetReq(name: string): Promise<Response> {
+  return fetch("/api/tools/presets", {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name }),
+  });
 }
 
 async function loadBitmap(file: File): Promise<ImageBitmap | HTMLImageElement> {
@@ -258,7 +245,9 @@ export default function SmartResizePage() {
   const [enhanceOn, setEnhanceOn] = useState(true);
   const [sectionNamesOn, setSectionNamesOn] = useState(false);
   const [maxKB, setMaxKB] = useState(300);
-  const [clientNames, setClientNames] = useState<string[]>([]);
+  const [presets, setPresets] = useState<Record<string, PresetSize[]>>({});
+  const [seededNames, setSeededNames] = useState<string[]>([]);
+  const [teamNames, setTeamNames] = useState<string[]>([]);
   const [selectedClient, setSelectedClient] = useState("");
   const [processing, setProcessing] = useState(false);
   const [progress, setProgress] = useState({ done: 0, total: 0, text: "" });
@@ -276,15 +265,30 @@ export default function SmartResizePage() {
     toastTimer.current = setTimeout(() => setToast(""), 2600);
   }, []);
 
+  const refreshPresets = useCallback(async () => {
+    try {
+      const list = await fetchPresets();
+      const map: Record<string, PresetSize[]> = {};
+      list.forEach((p) => {
+        map[p.name] = p.sizes;
+      });
+      setPresets(map);
+      setSeededNames(list.filter((p) => p.seeded).map((p) => p.name));
+      setTeamNames(list.filter((p) => !p.seeded).map((p) => p.name).sort());
+    } catch {
+      showToast("Couldn't load client presets — refresh to retry.");
+    }
+  }, [showToast]);
+
   useEffect(() => {
-    // localStorage is only readable after mount; a lazy initializer would mismatch SSR markup
+    // setState here happens after an awaited fetch, not synchronously
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setClientNames(Object.keys(loadSavedPresets()).filter((n) => !BUILT_IN[n]).sort());
+    refreshPresets();
     const urls = objectUrls.current;
     return () => {
       urls.forEach((u) => URL.revokeObjectURL(u));
     };
-  }, []);
+  }, [refreshPresets]);
 
   // ----- files -----
   const addFiles = useCallback((list: FileList | File[]) => {
@@ -333,16 +337,16 @@ export default function SmartResizePage() {
   const onClientChange = (name: string) => {
     setSelectedClient(name);
     if (!name) return;
-    const list = BUILT_IN[name] ?? loadSavedPresets()[name] ?? [];
+    const list = presets[name] ?? [];
     setSizes((prev) => prev.map((s) => ({ ...s, on: false })));
     // apply after the deselect state has been queued
     setTimeout(() => {
-      list.forEach((p) => addSize(p.w, p.h, true, (p as { label?: string }).label));
+      list.forEach((p) => addSize(p.w, p.h, true, p.label));
     }, 0);
     showToast(`Loaded sizes for “${name}”`);
   };
 
-  const onSavePreset = () => {
+  const onSavePreset = async () => {
     const active = sizes.filter((s) => s.on);
     if (!active.length) {
       showToast("Select at least one size first");
@@ -351,32 +355,48 @@ export default function SmartResizePage() {
     const name = window.prompt("Client name for this preset:");
     if (!name) return;
     const trimmed = name.trim();
-    if (BUILT_IN[trimmed]) {
+    if (!trimmed) return;
+    if (seededNames.includes(trimmed)) {
       showToast("That name is a built-in preset — pick another.");
       return;
     }
-    const presets = loadSavedPresets();
-    presets[trimmed] = active.map((s) => ({ w: s.w, h: s.h, label: s.label ?? undefined }));
-    saveSavedPresets(presets);
-    setClientNames(Object.keys(presets).filter((n) => !BUILT_IN[n]).sort());
+    const res = await savePresetReq(
+      trimmed,
+      active.map((s) => ({ w: s.w, h: s.h, label: s.label ?? undefined }))
+    ).catch(() => null);
+    if (!res?.ok) {
+      showToast(
+        res?.status === 401
+          ? "Session expired — reload the page to unlock again."
+          : "Couldn't save the preset — try again."
+      );
+      return;
+    }
+    await refreshPresets();
     setSelectedClient(trimmed);
-    showToast(`Saved preset for “${trimmed}”`);
+    showToast(`Saved “${trimmed}” for the whole team`);
   };
 
-  const onDeletePreset = () => {
+  const onDeletePreset = async () => {
     if (!selectedClient) {
       showToast("Select a client preset to delete");
       return;
     }
-    if (BUILT_IN[selectedClient]) {
+    if (seededNames.includes(selectedClient)) {
       showToast(`“${selectedClient}” is built-in and can't be deleted.`);
       return;
     }
-    if (!window.confirm(`Delete preset “${selectedClient}”?`)) return;
-    const presets = loadSavedPresets();
-    delete presets[selectedClient];
-    saveSavedPresets(presets);
-    setClientNames(Object.keys(presets).filter((n) => !BUILT_IN[n]).sort());
+    if (!window.confirm(`Delete preset “${selectedClient}” for the whole team?`)) return;
+    const res = await deletePresetReq(selectedClient).catch(() => null);
+    if (!res?.ok) {
+      showToast(
+        res?.status === 401
+          ? "Session expired — reload the page to unlock again."
+          : "Couldn't delete the preset — try again."
+      );
+      return;
+    }
+    await refreshPresets();
     setSelectedClient("");
     showToast("Deleted preset");
   };
@@ -626,16 +646,18 @@ export default function SmartResizePage() {
           <div className="sr-presetrow">
             <select value={selectedClient} onChange={(e) => onClientChange(e.target.value)}>
               <option value="">Client presets…</option>
-              <optgroup label="Built-in">
-                {Object.keys(BUILT_IN).map((n) => (
-                  <option key={n} value={n}>
-                    {n}
-                  </option>
-                ))}
-              </optgroup>
-              {clientNames.length > 0 && (
+              {seededNames.length > 0 && (
+                <optgroup label="Built-in">
+                  {seededNames.map((n) => (
+                    <option key={n} value={n}>
+                      {n}
+                    </option>
+                  ))}
+                </optgroup>
+              )}
+              {teamNames.length > 0 && (
                 <optgroup label="Saved by team">
-                  {clientNames.map((n) => (
+                  {teamNames.map((n) => (
                     <option key={n} value={n}>
                       {n}
                     </option>

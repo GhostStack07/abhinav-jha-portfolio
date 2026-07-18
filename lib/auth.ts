@@ -35,6 +35,18 @@ export async function verifyToolToken(token: string): Promise<boolean> {
   return token === (await makeToolToken(code))
 }
 
+// For tool API routes — 401 unless the tool session cookie is valid.
+// Mirrors the proxy's fail-open behaviour when no access code is configured.
+export async function requireToolAuth(): Promise<NextResponse | null> {
+  if (!process.env.SMART_RESIZE_CODE) return null
+  const jar = await cookies()
+  const token = jar.get(TOOL_COOKIE)?.value
+  if (!token || !(await verifyToolToken(token))) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+  return null
+}
+
 // Use in API route handlers — returns 401 response if not authed, null if ok
 export async function requireAuth(): Promise<NextResponse | null> {
   const jar = await cookies()
