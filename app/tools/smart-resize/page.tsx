@@ -15,7 +15,7 @@ import JSZip from "jszip";
 
 // ---------- types ----------
 type SizeDef = { w: number; h: number; on: boolean; label?: string | null };
-type OutputFile = { folder: string; filename: string; blob: Blob };
+type OutputFile = { group: string; size: string; filename: string; blob: Blob };
 type OutputCell = {
   fname: string;
   w: number;
@@ -53,6 +53,23 @@ type PresetRow = { name: string; sizes: PresetSize[]; seeded: boolean };
 function baseName(name: string): string {
   const i = name.lastIndexOf(".");
   return i > 0 ? name.slice(0, i) : name;
+}
+
+// Folder name for grouping shots of the same subject: strips trailing counters
+// so "deluxe room (1)", "deluxe-room-2" and "deluxe room copy" share "deluxe room".
+function imageGroup(base: string): string {
+  let g = base.trim();
+  let prev = "";
+  while (prev !== g) {
+    prev = g;
+    g = g
+      .replace(/\s*\(\d+\)\s*$/, "")
+      .replace(/[-_ ]+\d+$/, "")
+      .replace(/\s+copy\s*\d*$/i, "")
+      .trim();
+  }
+  g = g.replace(/[\\/]+/g, "-");
+  return g || base;
 }
 
 // "Accommodation / Dine / Meetings & Events" → ["accommodation", "dine", "meetings-events"]
@@ -245,6 +262,7 @@ export default function SmartResizePage() {
   const [enhanceOn, setEnhanceOn] = useState(true);
   const [sectionNamesOn, setSectionNamesOn] = useState(false);
   const [maxKB, setMaxKB] = useState(300);
+  const [zipByImage, setZipByImage] = useState(true);
   const [presets, setPresets] = useState<Record<string, PresetSize[]>>({});
   const [seededNames, setSeededNames] = useState<string[]>([]);
   const [teamNames, setTeamNames] = useState<string[]>([]);
@@ -488,7 +506,12 @@ export default function SmartResizePage() {
           const overBudget = maxKB > 0 && blob.size > maxKB * 1024;
           for (const stem of stems) {
             const fname = `${stem}_${s.w}x${s.h}.jpg`;
-            outputsRef.current.push({ folder: `${s.w}x${s.h}`, filename: fname, blob });
+            outputsRef.current.push({
+              group: imageGroup(baseName(file.name)),
+              size: `${s.w}x${s.h}`,
+              filename: fname,
+              blob,
+            });
             card.outputs.push({ fname, w: s.w, h: s.h, kb, overBudget, previewUrl, downloadUrl });
           }
 
@@ -516,7 +539,10 @@ export default function SmartResizePage() {
     if (!outputs.length) return;
     try {
       const zip = new JSZip();
-      outputs.forEach((o) => zip.folder(o.folder)!.file(o.filename, o.blob));
+      outputs.forEach((o) => {
+        const path = zipByImage ? `${o.group}/${o.size}` : o.size;
+        zip.file(`${path}/${o.filename}`, o.blob);
+      });
       const blob = await zip.generateAsync({ type: "blob" });
       const a = document.createElement("a");
       a.href = track(URL.createObjectURL(blob));
@@ -709,6 +735,24 @@ export default function SmartResizePage() {
                 type="checkbox"
                 checked={sectionNamesOn}
                 onChange={(e) => setSectionNamesOn(e.target.checked)}
+              />
+              <span />
+            </label>
+          </div>
+          <div className="sr-togglerow">
+            <div>
+              <b>Folder per photo (ZIP)</b>
+              <p>
+                Groups the ZIP by photo, then size — <i>deluxe room/671x358/…</i>. Numbered
+                shots (<i>deluxe room (1)</i>, <i>deluxe-room-2</i>) share one folder. Off =
+                one folder per size.
+              </p>
+            </div>
+            <label className="sr-switch">
+              <input
+                type="checkbox"
+                checked={zipByImage}
+                onChange={(e) => setZipByImage(e.target.checked)}
               />
               <span />
             </label>

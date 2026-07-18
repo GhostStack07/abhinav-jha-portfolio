@@ -16,8 +16,11 @@ batch upload → AI smart crop (subject-aware) → auto colour enhance
 (Canva-style) → export every required size → download individually or as ZIP.
 
 Non-negotiable requirement: output filenames keep the original uploaded name,
-with a size suffix — `originalname_1366x565.jpg`. ZIP groups outputs into
-folders per size (e.g. `1366x565/`).
+with a size suffix — `originalname_1366x565.jpg`. ZIP layout (added
+2026-07-18, AJ's request): default groups by photo then size —
+`deluxe room/1366x565/…`, with trailing counters stripped so numbered shots
+of one subject share a folder; a "Folder per photo (ZIP)" toggle switches
+back to the original flat per-size folders (`1366x565/`).
 
 ---
 
