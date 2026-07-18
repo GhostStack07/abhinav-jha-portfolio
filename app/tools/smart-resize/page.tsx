@@ -20,6 +20,8 @@ type OutputCell = {
   fname: string;
   w: number;
   h: number;
+  kb: number;
+  overBudget: boolean;
   previewUrl: string;
   downloadUrl: string;
 };
@@ -227,6 +229,27 @@ function canvasToBlob(canvas: HTMLCanvasElement, quality = 0.9): Promise<Blob> {
   });
 }
 
+// Highest JPEG quality that fits the KB budget (binary search); maxKB 0 = no limit.
+async function encodeWithBudget(canvas: HTMLCanvasElement, maxKB: number): Promise<Blob> {
+  const blob = await canvasToBlob(canvas, 0.9);
+  if (!maxKB || blob.size <= maxKB * 1024) return blob;
+  let lo = 0.3,
+    hi = 0.9,
+    best: Blob | null = null;
+  for (let i = 0; i < 6; i++) {
+    const q = (lo + hi) / 2;
+    const b = await canvasToBlob(canvas, q);
+    if (b.size <= maxKB * 1024) {
+      best = b;
+      lo = q;
+    } else {
+      hi = q;
+    }
+  }
+  // nothing fit even near quality 0.3 — return the smallest we can make
+  return best ?? (await canvasToBlob(canvas, 0.3));
+}
+
 // ---------- component ----------
 export default function SmartResizePage() {
   const [files, setFiles] = useState<File[]>([]);
@@ -234,6 +257,7 @@ export default function SmartResizePage() {
   const [customSize, setCustomSize] = useState("");
   const [enhanceOn, setEnhanceOn] = useState(true);
   const [sectionNamesOn, setSectionNamesOn] = useState(false);
+  const [maxKB, setMaxKB] = useState(300);
   const [clientNames, setClientNames] = useState<string[]>([]);
   const [selectedClient, setSelectedClient] = useState("");
   const [processing, setProcessing] = useState(false);
@@ -403,7 +427,7 @@ export default function SmartResizePage() {
         const th = src.height * tScale;
         const tox = (thumb.width - tw) / 2;
         const toy = (thumb.height - th) / 2;
-        tctx.fillStyle = "#EEF1F4";
+        tctx.fillStyle = "#1c1914";
         tctx.fillRect(0, 0, thumb.width, thumb.height);
         tctx.drawImage(src, tox, toy, tw, th);
 
@@ -416,7 +440,7 @@ export default function SmartResizePage() {
           const crop = await computeCrop(src, s.w, s.h);
           if (!crop.smart) anyFallback = true;
 
-          tctx.strokeStyle = "rgba(15,118,110,0.85)";
+          tctx.strokeStyle = "rgba(255,92,56,0.85)";
           tctx.lineWidth = 1.5;
           tctx.strokeRect(tox + crop.x * tScale, toy + crop.y * tScale, crop.w * tScale, crop.h * tScale);
 
@@ -431,7 +455,7 @@ export default function SmartResizePage() {
           octx.drawImage(src, crop.x, crop.y, crop.w, crop.h, 0, 0, s.w, s.h);
           if (enhanceOn) enhanceCanvas(out);
 
-          const blob = await canvasToBlob(out);
+          const blob = await encodeWithBudget(out, maxKB);
           // Section-filename mode: one file per site section for labelled sizes,
           // all sharing the same rendered blob. Unlabelled sizes keep plain names.
           const sections = sectionNamesOn ? sectionSlugs(s.label) : [];
@@ -440,10 +464,12 @@ export default function SmartResizePage() {
             : [baseName(file.name)];
           const previewUrl = out.toDataURL("image/jpeg", 0.6);
           const downloadUrl = track(URL.createObjectURL(blob));
+          const kb = Math.max(1, Math.round(blob.size / 1024));
+          const overBudget = maxKB > 0 && blob.size > maxKB * 1024;
           for (const stem of stems) {
             const fname = `${stem}_${s.w}x${s.h}.jpg`;
             outputsRef.current.push({ folder: `${s.w}x${s.h}`, filename: fname, blob });
-            card.outputs.push({ fname, w: s.w, h: s.h, previewUrl, downloadUrl });
+            card.outputs.push({ fname, w: s.w, h: s.h, kb, overBudget, previewUrl, downloadUrl });
           }
 
           done++;
@@ -490,8 +516,9 @@ export default function SmartResizePage() {
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className="sr-wrap">
         <header>
-          <div className="sr-eyebrow">Internal Tool</div>
-          <h1>Smart Resize</h1>
+          <h1>
+            Smart <span className="hl">Resize</span>
+          </h1>
           <p>
             Upload once, get every size. Content-aware cropping keeps the subject in frame,
             auto-enhance balances the colours, and files keep their original names.
@@ -523,6 +550,19 @@ export default function SmartResizePage() {
               addFiles(e.dataTransfer.files);
             }}
           >
+            <svg
+              className="sr-dropicon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={1.8}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M12 16V4m0 0 4 4m-4-4-4 4" />
+              <path d="M4 16.5V19a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2.5" />
+            </svg>
             <strong>Drop images here or tap to browse</strong>
             <span>JPG / PNG / WebP · multiple files supported</span>
             <input
@@ -651,6 +691,24 @@ export default function SmartResizePage() {
               <span />
             </label>
           </div>
+          <div className="sr-togglerow sr-sliderrow">
+            <div>
+              <b>Max file size</b>
+              <p>Each export is compressed to stay under this limit — keeps pages fast.</p>
+            </div>
+            <div className="sr-slider">
+              <input
+                type="range"
+                min={0}
+                max={500}
+                step={25}
+                value={maxKB}
+                onChange={(e) => setMaxKB(parseInt(e.target.value, 10))}
+                aria-label="Maximum file size in kilobytes"
+              />
+              <span className="val">{maxKB === 0 ? "No limit" : `${maxKB} KB`}</span>
+            </div>
+          </div>
         </section>
 
         {/* STEP 4 */}
@@ -712,7 +770,10 @@ export default function SmartResizePage() {
                         <div className="oc-meta">
                           <b>{o.fname}</b>
                           <span>
-                            {o.w} × {o.h} px
+                            {o.w} × {o.h} px ·{" "}
+                            <em className={o.overBudget ? "kb over" : "kb"}>
+                              {o.kb} KB{o.overBudget ? " — over limit" : ""}
+                            </em>
                           </span>
                         </div>
                         <a href={o.downloadUrl} download={o.fname}>
@@ -735,71 +796,86 @@ export default function SmartResizePage() {
 
 // ---------- styles (scoped under .sr-root) ----------
 const CSS = `
-.sr-root{--bg:#EDF0F3;--card:#fff;--ink:#17222E;--muted:#5D6B7A;--line:#D8DEE5;--accent:#0F766E;--accent-soft:#E2F1EF;--accent-ink:#0B5A54;--danger:#B4372F;--radius:12px;
-  background:var(--bg);color:var(--ink);min-height:100vh;padding-bottom:80px;line-height:1.5;
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif}
+.sr-root{--bg:#0d0c0a;--card:#141210;--card-2:#1c1914;--ink:#eae5d8;--muted:#9a948a;--faint:#4a453d;--line:#2a2621;--accent:#ff5c38;--accent-2:#d4ff3a;--accent-soft:rgba(255,92,56,.10);--danger:#ff6b5e;--radius:14px;
+  --srf:var(--serif,Georgia,serif);--sns:var(--sans,system-ui,sans-serif);--mno:var(--mono,ui-monospace,monospace);
+  background:radial-gradient(900px 420px at 88% -8%,rgba(255,92,56,.09),transparent 60%),radial-gradient(700px 400px at -5% 2%,rgba(212,255,58,.05),transparent 55%),var(--bg);
+  color:var(--ink);min-height:100vh;padding-bottom:96px;line-height:1.5;font-family:var(--sns)}
 .sr-root *{box-sizing:border-box}
 .sr-wrap{max-width:880px;margin:0 auto;padding:0 16px}
-.sr-root header{padding:28px 0 18px}
-.sr-eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent-ink);font-weight:700}
-.sr-root h1{font-size:clamp(24px,5vw,34px);font-weight:800;letter-spacing:-.02em;margin:4px 0 0}
-.sr-root header p{color:var(--muted);font-size:14px;margin:6px 0 0;max-width:560px}
-.sr-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px;margin-bottom:14px}
-.sr-card h2{font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700;margin:0 0 12px;display:flex;align-items:center;gap:8px}
-.sr-step{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:var(--ink);color:#fff;font-size:11px;font-weight:700;letter-spacing:0}
-.sr-drop{display:block;border:2px dashed var(--line);border-radius:var(--radius);padding:34px 16px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s}
-.sr-drop.hover{border-color:var(--accent);background:var(--accent-soft)}
-.sr-drop strong{display:block;font-size:15px}
+.sr-root header{padding:48px 0 26px}
+.sr-eyebrow{font-family:var(--mno);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+.sr-root h1{font-family:var(--srf);font-weight:400;font-size:clamp(44px,7vw,76px);line-height:.95;letter-spacing:-.025em;margin:0;color:var(--ink)}
+.sr-root h1 .hl{background:linear-gradient(180deg,transparent 62%,var(--accent) 62%,var(--accent) 92%,transparent 92%);padding:0 6px;font-style:italic}
+.sr-root header p{color:var(--muted);font-size:15px;margin:14px 0 0;max-width:560px}
+.sr-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px;margin-bottom:16px}
+.sr-card h2{font-family:var(--mno);font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);font-weight:500;margin:0 0 14px;display:flex;align-items:center;gap:10px}
+.sr-step{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:var(--accent);color:#12110e;font-size:11px;font-weight:700;letter-spacing:0;font-family:var(--sns)}
+.sr-drop{display:block;border:1px dashed var(--faint);border-radius:12px;padding:36px 16px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;background:var(--card-2)}
+.sr-drop:hover,.sr-drop.hover{border-color:var(--accent);background:var(--accent-soft)}
+.sr-dropicon{width:38px;height:38px;margin:0 auto 10px;display:block;color:var(--accent);transition:transform .2s}
+.sr-drop:hover .sr-dropicon,.sr-drop.hover .sr-dropicon{transform:translateY(-3px)}
+.sr-drop strong{display:block;font-size:15px;color:var(--ink);font-weight:600}
 .sr-drop span{color:var(--muted);font-size:13px}
 .sr-drop input{display:none}
 .sr-filelist{margin-top:12px;display:flex;flex-wrap:wrap;gap:8px}
-.sr-filechip{display:inline-flex;align-items:center;gap:6px;background:#F2F5F7;border:1px solid var(--line);border-radius:8px;padding:5px 10px;font-size:12.5px;max-width:100%}
-.sr-filechip b{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:180px}
+.sr-filechip{display:inline-flex;align-items:center;gap:8px;background:var(--card-2);border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-size:12.5px;max-width:100%}
+.sr-filechip b{font-weight:500;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:180px}
 .sr-filechip button{border:none;background:none;color:var(--muted);cursor:pointer;font-size:14px;line-height:1;padding:0}
+.sr-filechip button:hover{color:var(--accent)}
 .sr-chiprow{display:flex;flex-wrap:wrap;gap:8px}
-.sr-sizechip{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:7px 14px;font-size:13px;cursor:pointer;user-select:none;transition:all .12s;font-weight:600;color:var(--muted);font-family:inherit}
-.sr-sizechip.on{background:var(--accent);border-color:var(--accent);color:#fff}
-.sr-customrow{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
-.sr-customrow input{border:1px solid var(--line);border-radius:8px;padding:9px 12px;font-size:14px;width:170px;font-family:inherit}
-.sr-customrow input:focus{outline:2px solid var(--accent);outline-offset:0;border-color:var(--accent)}
-.sr-btn{border:none;border-radius:8px;padding:9px 16px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit}
-.sr-btn.ghost{background:#F2F5F7;color:var(--ink);border:1px solid var(--line)}
-.sr-btn.accent{background:var(--accent);color:#fff}
-.sr-btn:disabled{opacity:.45;cursor:not-allowed}
-.sr-btn.process{width:100%;padding:14px;font-size:15.5px;border-radius:10px}
+.sr-sizechip{border:1px solid var(--line);background:transparent;border-radius:999px;padding:8px 14px;font-family:var(--mno);font-size:11.5px;letter-spacing:.02em;cursor:pointer;user-select:none;transition:all .18s;color:var(--muted)}
+.sr-sizechip:hover{border-color:var(--muted);color:var(--ink)}
+.sr-sizechip.on{background:var(--accent);border-color:var(--accent);color:#12110e;box-shadow:0 0 18px rgba(255,92,56,.28)}
+.sr-customrow{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.sr-customrow input{border:1px solid var(--line);background:var(--card-2);color:var(--ink);border-radius:999px;padding:9px 14px;font-size:13.5px;width:180px;font-family:var(--mno)}
+.sr-customrow input::placeholder{color:var(--faint)}
+.sr-customrow input:focus{outline:1px solid var(--accent);outline-offset:0;border-color:var(--accent)}
+.sr-btn{border:1px solid var(--line);border-radius:999px;padding:9px 18px;font-size:13.5px;font-weight:500;cursor:pointer;font-family:var(--sns);transition:all .2s;background:transparent;color:var(--ink)}
+.sr-btn.ghost:hover:not(:disabled){border-color:var(--ink)}
+.sr-btn.accent{background:var(--accent);color:#12110e;border-color:var(--accent);font-weight:600}
+.sr-btn.accent:hover:not(:disabled){background:transparent;color:var(--accent)}
+.sr-btn:disabled{opacity:.4;cursor:not-allowed}
+.sr-btn.process{width:100%;padding:15px;font-size:15px}
 .sr-presetrow{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;align-items:center}
-.sr-presetrow select{border:1px solid var(--line);border-radius:8px;padding:9px 12px;font-size:13.5px;background:#fff;flex:1;min-width:160px;font-family:inherit}
-.sr-hint{font-size:12px;color:var(--muted);margin-top:8px}
+.sr-presetrow select{border:1px solid var(--line);background:var(--card-2);color:var(--ink);border-radius:999px;padding:9px 14px;font-size:13px;flex:1;min-width:160px;font-family:var(--sns)}
+.sr-hint{font-size:12px;color:var(--faint);margin-top:10px}
 .sr-togglerow{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .sr-togglerow + .sr-togglerow{margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
-.sr-togglerow p i{font-style:normal;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px}
-.sr-togglerow b{font-size:14.5px}
+.sr-togglerow p i{font-style:normal;font-family:var(--mno);font-size:11px}
+.sr-slider{display:flex;align-items:center;gap:12px;flex:none}
+.sr-slider input[type=range]{width:150px;accent-color:var(--accent);cursor:pointer}
+.sr-slider .val{font-family:var(--srf);font-style:italic;font-size:17px;color:var(--ink);min-width:70px;text-align:right}
+.sr-togglerow b{font-size:14.5px;color:var(--ink);font-weight:600}
 .sr-togglerow p{font-size:12.5px;color:var(--muted);margin:0}
 .sr-switch{position:relative;width:46px;height:26px;flex:none;display:inline-block}
 .sr-switch input{opacity:0;width:0;height:0;position:absolute}
-.sr-switch span{position:absolute;inset:0;background:#C6CED6;border-radius:999px;cursor:pointer;transition:.15s}
-.sr-switch span:before{content:"";position:absolute;height:20px;width:20px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.15s}
+.sr-switch span{position:absolute;inset:0;background:#3a352e;border-radius:999px;cursor:pointer;transition:.15s}
+.sr-switch span:before{content:"";position:absolute;height:20px;width:20px;left:3px;top:3px;background:var(--ink);border-radius:50%;transition:.15s}
 .sr-switch input:checked + span{background:var(--accent)}
-.sr-switch input:checked + span:before{transform:translateX(20px)}
-.sr-progress{margin-top:12px}
-.sr-progress .bar{height:8px;background:#E4E9ED;border-radius:99px;overflow:hidden}
-.sr-progress .fill{height:100%;background:var(--accent);transition:width .2s}
-.sr-progress .txt{font-size:12.5px;color:var(--muted);margin-top:6px;text-align:center}
+.sr-switch input:checked + span:before{background:#12110e;transform:translateX(20px)}
+.sr-progress{margin-top:14px}
+.sr-progress .bar{height:6px;background:var(--line);border-radius:99px;overflow:hidden}
+.sr-progress .fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent-2));transition:width .2s}
+.sr-progress .txt{font-family:var(--mno);font-size:11.5px;color:var(--muted);margin-top:8px;text-align:center;letter-spacing:.04em}
 .sr-reshead{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}
-.sr-imgcard{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;margin-bottom:14px;background:#fff}
+.sr-imgcard{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;margin-bottom:14px;background:var(--card)}
 .sr-imgcard .top{display:flex;gap:12px;padding:12px;border-bottom:1px solid var(--line);align-items:center}
-.sr-imgcard .top img,.sr-imgcard .thumb-ph{width:88px;height:66px;object-fit:cover;border-radius:8px;background:#EEF1F4;flex:none}
-.sr-imgcard .meta b{font-size:14px;word-break:break-all}
+.sr-imgcard .top img,.sr-imgcard .thumb-ph{width:88px;height:66px;object-fit:cover;border-radius:8px;background:var(--card-2);flex:none}
+.sr-imgcard .meta b{font-size:14px;color:var(--ink);word-break:break-all;font-weight:600}
 .sr-imgcard .meta span{display:block;font-size:12px;color:var(--muted)}
-.sr-imgcard .meta .tag{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-ink);background:var(--accent-soft);border-radius:5px;padding:2px 7px;margin-top:4px}
+.sr-imgcard .meta .tag{display:inline-block;font-family:var(--mno);font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);background:var(--accent-soft);border-radius:5px;padding:2px 8px;margin-top:4px}
 .sr-imgcard .meta .err{color:var(--danger)}
 .outgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;padding:12px}
-.outcell{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#FAFBFC}
-.outcell img{width:100%;display:block;background:#EEF1F4}
+.outcell{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--card-2);transition:border-color .18s,transform .18s}
+.outcell:hover{transform:translateY(-2px);border-color:var(--muted)}
+.outcell img{width:100%;display:block;background:var(--card-2)}
 .outcell .oc-meta{padding:8px 10px;font-size:11.5px;color:var(--muted)}
-.outcell .oc-meta b{display:block;color:var(--ink);font-size:12px;word-break:break-all;font-weight:600}
-.outcell a{display:block;text-align:center;padding:7px;font-size:12.5px;font-weight:700;color:var(--accent-ink);text-decoration:none;border-top:1px solid var(--line)}
-.sr-toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#17222E;color:#fff;padding:10px 18px;border-radius:99px;font-size:13.5px;opacity:0;pointer-events:none;transition:opacity .25s;z-index:50;max-width:90vw;text-align:center}
+.outcell .oc-meta .kb{font-style:normal}
+.outcell .oc-meta .kb.over{color:var(--danger);font-weight:700}
+.outcell .oc-meta b{display:block;color:var(--ink);font-size:12px;word-break:break-all;font-weight:500}
+.outcell a{display:block;text-align:center;padding:8px;font-size:12.5px;font-weight:600;color:var(--accent);text-decoration:none;border-top:1px solid var(--line);transition:background .18s}
+.outcell a:hover{background:var(--accent-soft)}
+.sr-toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--ink);color:#12110e;padding:10px 18px;border-radius:99px;font-size:13.5px;font-weight:500;opacity:0;pointer-events:none;transition:opacity .25s;z-index:50;max-width:90vw;text-align:center}
 .sr-toast.show{opacity:1}
 @media (prefers-reduced-motion: reduce){.sr-root *{transition:none!important}}
 `;
