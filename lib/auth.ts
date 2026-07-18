@@ -22,6 +22,19 @@ export async function verifyToken(token: string): Promise<boolean> {
   return token === expected
 }
 
+// --- Smart Resize tool gate (see proxy.ts) ---
+export const TOOL_COOKIE = 'aj_tool'
+
+export async function makeToolToken(code: string): Promise<string> {
+  return sha256(code + 'aj-tool-salt-2026')
+}
+
+export async function verifyToolToken(token: string): Promise<boolean> {
+  const code = process.env.SMART_RESIZE_CODE
+  if (!code) return false
+  return token === (await makeToolToken(code))
+}
+
 // Use in API route handlers — returns 401 response if not authed, null if ok
 export async function requireAuth(): Promise<NextResponse | null> {
   const jar = await cookies()

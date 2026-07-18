@@ -92,11 +92,15 @@ ships a shared database.
   select "Royal Orchid" preset, process, ZIP downloads with correct
   filenames and folder structure.
 
-### Task 2 — Access protection
-- Simple access code gate (env var `SMART_RESIZE_CODE`), checked client-side
-  is acceptable for v1.5; middleware-based is better if trivial.
-- Accept: opening the route without the code shows a code prompt; correct
-  code unlocks for the session.
+### Task 2 — Access protection ✅ shipped 2026-07-18
+- Server-side gate in `proxy.ts` (Next 16 proxy convention; also guards
+  /admin). `/tools/*` without a valid `aj_tool` session cookie redirects to
+  `/tools/unlock`; `/api/tools/unlock` checks the code against env var
+  `SMART_RESIZE_CODE` and sets the cookie (session-lifetime, httpOnly).
+- Gate is OFF when `SMART_RESIZE_CODE` is unset (fail-open rollout). The
+  code lives in Vercel env (production); rotate it there to change access.
+- Accepted: no-cookie visit shows the code prompt; correct code unlocks
+  for the browser session.
 
 ### Task 3 — Shared preset database
 - Replace localStorage preset functions with Supabase (free tier) or
