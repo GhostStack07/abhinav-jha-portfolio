@@ -15,6 +15,7 @@ import JSZip from "jszip";
 
 // ---------- types ----------
 type SizeDef = { w: number; h: number; on: boolean; label?: string | null };
+type UploadItem = { file: File; folder: string | null };
 type OutputFile = { group: string; size: string; filename: string; blob: Blob };
 type OutputCell = {
   fname: string;
@@ -28,6 +29,7 @@ type OutputCell = {
 type ResultCard = {
   name: string;
   sizeMB: string;
+  folderNote?: string;
   thumbUrl: string;
   tag: string;
   error?: string;
@@ -53,6 +55,50 @@ type PresetRow = { name: string; sizes: PresetSize[]; seeded: boolean };
 function baseName(name: string): string {
   const i = name.lastIndexOf(".");
   return i > 0 ? name.slice(0, i) : name;
+}
+
+// Immediate parent folder when the file came in via folder upload, else null
+function folderOf(file: File): string | null {
+  const rel = (file as File & { webkitRelativePath?: string }).webkitRelativePath;
+  if (rel && rel.includes("/")) {
+    const parts = rel.split("/");
+    if (parts.length >= 2) return parts[parts.length - 2] || null;
+  }
+  return null;
+}
+
+// Read dropped folders recursively; plain file drops pass straight through
+async function itemsFromDataTransfer(dt: DataTransfer): Promise<UploadItem[]> {
+  const entries = Array.from(dt.items).map((i) =>
+    typeof i.webkitGetAsEntry === "function" ? i.webkitGetAsEntry() : null
+  );
+  if (!entries.some((e) => e && e.isDirectory)) {
+    return Array.from(dt.files).map((f) => ({ file: f, folder: folderOf(f) }));
+  }
+  const out: UploadItem[] = [];
+  async function walk(entry: FileSystemEntry, parent: string | null): Promise<void> {
+    if (entry.isFile) {
+      const file = await new Promise<File>((res, rej) =>
+        (entry as FileSystemFileEntry).file(res, rej)
+      );
+      out.push({ file, folder: parent });
+    } else if (entry.isDirectory) {
+      const reader = (entry as FileSystemDirectoryEntry).createReader();
+      let batch: FileSystemEntry[] = [];
+      do {
+        batch = await new Promise((res, rej) => reader.readEntries(res, rej));
+        for (const e of batch) await walk(e, entry.name);
+      } while (batch.length > 0);
+    }
+  }
+  for (const e of entries) {
+    if (e) await walk(e, null);
+  }
+  return out;
+}
+
+function folderSlug(name: string): string {
+  return name.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
 }
 
 // Folder name for grouping shots of the same subject: strips trailing counters
@@ -256,7 +302,7 @@ async function encodeWithBudget(canvas: HTMLCanvasElement, maxKB: number): Promi
 
 // ---------- component ----------
 export default function SmartResizePage() {
-  const [files, setFiles] = useState<File[]>([]);
+  const [uploads, setUploads] = useState<UploadItem[]>([]);
   const [sizes, setSizes] = useState<SizeDef[]>(DEFAULT_SIZES);
   const [customSize, setCustomSize] = useState("");
   const [enhanceOn, setEnhanceOn] = useState(true);
@@ -309,13 +355,19 @@ export default function SmartResizePage() {
   }, [refreshPresets]);
 
   // ----- files -----
-  const addFiles = useCallback((list: FileList | File[]) => {
-    const next: File[] = [];
-    Array.from(list).forEach((f) => {
-      if (/^image\//.test(f.type)) next.push(f);
-    });
-    if (next.length) setFiles((prev) => [...prev, ...next]);
+  const folderInputRef = useRef<HTMLInputElement>(null);
+
+  const addUploads = useCallback((items: UploadItem[]) => {
+    const next = items.filter((it) => /^image\//.test(it.file.type));
+    if (next.length) setUploads((prev) => [...prev, ...next]);
   }, []);
+
+  const addFiles = useCallback(
+    (list: FileList | File[]) => {
+      addUploads(Array.from(list).map((f) => ({ file: f, folder: folderOf(f) })));
+    },
+    [addUploads]
+  );
 
   // ----- sizes -----
   const toggleSize = (idx: number) =>
@@ -420,7 +472,7 @@ export default function SmartResizePage() {
   };
 
   // ----- processing -----
-  const canProcess = files.length > 0 && sizes.some((s) => s.on) && !processing;
+  const canProcess = uploads.length > 0 && sizes.some((s) => s.on) && !processing;
 
   const track = (url: string) => {
     objectUrls.current.push(url);
@@ -429,20 +481,42 @@ export default function SmartResizePage() {
 
   const onProcess = async () => {
     const activeSizes = sizes.filter((s) => s.on);
-    if (!files.length || !activeSizes.length) return;
+    if (!uploads.length || !activeSizes.length) return;
+
+    // Folder-named uploads only get the sizes whose section label matches the
+    // folder ("accommodation/" → accommodation sizes). No match = all sizes.
+    const sizesFor = (item: UploadItem): SizeDef[] => {
+      if (!item.folder) return activeSizes;
+      const fSlug = folderSlug(item.folder);
+      if (!fSlug) return activeSizes;
+      const matched = activeSizes.filter((s) =>
+        sectionSlugs(s.label).some(
+          (sl) => sl === fSlug || sl.includes(fSlug) || fSlug.includes(sl)
+        )
+      );
+      return matched.length ? matched : activeSizes;
+    };
+    const plan = uploads.map((item) => ({ item, itemSizes: sizesFor(item) }));
 
     setProcessing(true);
     setResults([]);
     outputsRef.current = [];
-    const total = files.length * activeSizes.length;
+    const total = plan.reduce((n, p) => n + p.itemSizes.length, 0);
     let done = 0;
     let anyFallback = false;
     const cards: ResultCard[] = [];
 
-    for (const file of files) {
+    for (const { item, itemSizes } of plan) {
+      const file = item.file;
       const card: ResultCard = {
         name: file.name,
         sizeMB: (file.size / 1024 / 1024).toFixed(2) + " MB",
+        folderNote: item.folder
+          ? `${item.folder}/` +
+            (itemSizes.length !== activeSizes.length
+              ? ` → ${itemSizes.length} of ${activeSizes.length} sizes`
+              : "")
+          : "",
         thumbUrl: "",
         tag: "ANALYSING…",
         outputs: [],
@@ -469,7 +543,7 @@ export default function SmartResizePage() {
         tctx.fillRect(0, 0, thumb.width, thumb.height);
         tctx.drawImage(src, tox, toy, tw, th);
 
-        for (const s of activeSizes) {
+        for (const s of itemSizes) {
           setProgress({
             done,
             total,
@@ -507,7 +581,9 @@ export default function SmartResizePage() {
           for (const stem of stems) {
             const fname = `${stem}_${s.w}x${s.h}.jpg`;
             outputsRef.current.push({
-              group: imageGroup(baseName(file.name)),
+              group: item.folder
+                ? item.folder.replace(/[\\/]+/g, "-")
+                : imageGroup(baseName(file.name)),
               size: `${s.w}x${s.h}`,
               filename: fname,
               blob,
@@ -523,7 +599,7 @@ export default function SmartResizePage() {
         card.tag = anyFallback ? "CENTER CROP (AI LIB OFFLINE)" : "AI FOCUS DETECTED";
       } catch (err) {
         card.error = err instanceof Error ? err.message : "Could not process";
-        done += activeSizes.length;
+        done += itemSizes.length;
       }
       cards.push({ ...card });
       setResults([...cards]);
@@ -593,7 +669,7 @@ export default function SmartResizePage() {
             onDrop={(e) => {
               e.preventDefault();
               setDragOver(false);
-              addFiles(e.dataTransfer.files);
+              itemsFromDataTransfer(e.dataTransfer).then(addUploads);
             }}
           >
             <svg
@@ -609,8 +685,8 @@ export default function SmartResizePage() {
               <path d="M12 16V4m0 0 4 4m-4-4-4 4" />
               <path d="M4 16.5V19a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2.5" />
             </svg>
-            <strong>Drop images here or tap to browse</strong>
-            <span>JPG / PNG / WebP · multiple files supported</span>
+            <strong>Drop images or folders here — or tap to browse</strong>
+            <span>JPG / PNG / WebP · folder names group the ZIP and pick matching sizes</span>
             <input
               type="file"
               accept="image/*"
@@ -621,14 +697,35 @@ export default function SmartResizePage() {
               }}
             />
           </label>
-          {files.length > 0 && (
+          <div className="sr-folderrow">
+            <span>Photos sorted into room or section folders?</span>
+            <button
+              className="sr-btn ghost"
+              onClick={() => folderInputRef.current?.click()}
+            >
+              Upload a folder
+            </button>
+            <input
+              ref={folderInputRef}
+              type="file"
+              multiple
+              style={{ display: "none" }}
+              {...({ webkitdirectory: "" } as React.InputHTMLAttributes<HTMLInputElement>)}
+              onChange={(e) => {
+                if (e.target.files) addFiles(e.target.files);
+                e.target.value = "";
+              }}
+            />
+          </div>
+          {uploads.length > 0 && (
             <div className="sr-filelist">
-              {files.map((f, i) => (
-                <div className="sr-filechip" key={f.name + i}>
-                  <b>{f.name}</b>
+              {uploads.map((u, i) => (
+                <div className="sr-filechip" key={u.file.name + i}>
+                  {u.folder && <span className="fold">{u.folder}/</span>}
+                  <b>{u.file.name}</b>
                   <button
-                    aria-label={"Remove " + f.name}
-                    onClick={() => setFiles((prev) => prev.filter((_, j) => j !== i))}
+                    aria-label={"Remove " + u.file.name}
+                    onClick={() => setUploads((prev) => prev.filter((_, j) => j !== i))}
                   >
                     ✕
                   </button>
@@ -820,6 +917,7 @@ export default function SmartResizePage() {
                   <div className="meta">
                     <b>{card.name}</b>
                     <span>{card.sizeMB}</span>
+                    {card.folderNote && <span className="fold">{card.folderNote}</span>}
                     {card.error ? (
                       <span className="err">Failed: {card.error}</span>
                     ) : (
@@ -888,6 +986,9 @@ const CSS = `
 .sr-filechip b{font-weight:500;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:180px}
 .sr-filechip button{border:none;background:none;color:var(--muted);cursor:pointer;font-size:14px;line-height:1;padding:0}
 .sr-filechip button:hover{color:var(--accent)}
+.sr-filechip .fold{font-family:var(--mno);font-size:11px;color:var(--accent)}
+.sr-folderrow{margin-top:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12.5px;color:var(--muted)}
+.sr-imgcard .meta .fold{font-family:var(--mno);font-size:11px;color:var(--accent)}
 .sr-chiprow{display:flex;flex-wrap:wrap;gap:8px}
 .sr-sizechip{border:1px solid var(--line);background:transparent;border-radius:999px;padding:8px 14px;font-family:var(--mno);font-size:11.5px;letter-spacing:.02em;cursor:pointer;user-select:none;transition:all .18s;color:var(--muted)}
 .sr-sizechip:hover{border-color:var(--muted);color:var(--ink)}

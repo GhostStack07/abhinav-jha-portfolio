@@ -124,6 +124,16 @@ ships a shared database.
 - Accept: measurably better subject retention on the team's reported
   failure images; smartcrop remains the fallback.
 
+### Folder upload + folder-aware processing ✅ shipped 2026-07-18 (AJ request)
+- Upload whole folders (button with webkitdirectory input, or drag-drop of
+  directories). Each file remembers its immediate parent folder.
+- Folder name drives two things: (1) ZIP grouping — outputs land under the
+  uploaded folder's name; (2) size selection — if the folder name matches a
+  section label of the active sizes (slug match, e.g. "accommodation",
+  "dining"), only those sizes are produced for that folder's photos. No
+  match (or loose files) = all selected sizes. Result cards show
+  "folder/ → N of M sizes".
+
 ### Task 5 — Per-section filenames ✅ shipped 2026-07-17
 - "Section filenames" toggle (default off) in the Output options card.
   When on, each size's label is split on "/" into section slugs and one file
