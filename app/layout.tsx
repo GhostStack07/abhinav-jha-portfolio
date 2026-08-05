@@ -4,6 +4,7 @@ import './globals.css'
 import TrackingScripts from '@/components/TrackingScripts'
 import { prisma } from '@/lib/db'
 import { SpeedInsights } from '@vercel/speed-insights/next'
+import { Analytics } from '@vercel/analytics/next'
 
 const instrumentSerif = Instrument_Serif({
   weight: ['400'],
@@ -70,6 +71,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           />
         )}
         <SpeedInsights />
+        <Analytics />
       </body>
     </html>
   )
