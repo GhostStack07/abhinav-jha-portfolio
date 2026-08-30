@@ -87,7 +87,8 @@
     --ink-faint: #4a453d;
     --rule: #2a2621;
     --accent: #ff5c38;  /* vermilion — changed via Tweaks panel */
-    --accent-2: #d4ff3a;
+    --accent-2: #d4ff3a; /* yellow-green — kept only for .done state */
+    --success: #22c55e;
     --serif: var(--font-serif), 'GT Sectra', Georgia, serif;
     --sans: var(--font-sans), system-ui, sans-serif;
     --mono: var(--font-mono), ui-monospace, monospace;
@@ -172,7 +173,7 @@
   /* HERO */
   section.hero { min-height: 100vh; padding: 140px 0 80px; position: relative; display: flex; flex-direction: column; justify-content: center; }
   .eyebrow { font-family: var(--mono); font-size: 13px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-dim); display: inline-flex; align-items: center; gap: 14px; margin-bottom: 40px; }
-  .eyebrow .pip { width: 8px; height: 8px; border-radius: 50%; background: var(--accent-2); box-shadow: 0 0 10px var(--accent-2); animation: pulse 1.6s infinite; }
+  .eyebrow .pip { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent); animation: pulse 1.6s infinite; }
   @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
   .eyebrow .rule { width: 56px; height: 1px; background: var(--rule); }
 
@@ -322,7 +323,7 @@
   }
   .lead::before { content: ""; position: absolute; inset: 0; pointer-events: none;
     background: radial-gradient(ellipse at 90% 0%, color-mix(in oklab, var(--accent) 14%, transparent) 0%, transparent 50%),
-                radial-gradient(ellipse at 0% 100%, color-mix(in oklab, var(--accent-2) 10%, transparent) 0%, transparent 55%);
+                radial-gradient(ellipse at 0% 100%, color-mix(in oklab, var(--accent) 8%, transparent) 0%, transparent 55%);
   }
   @media (max-width: 900px) { .lead { grid-template-columns: 1fr; gap: 32px; padding: 32px; } }
   .lead .pitch h3 { font-family: var(--serif); font-weight: 400; font-size: clamp(32px, 3.6vw, 52px); line-height: 1.05; letter-spacing: -0.02em; margin: 0 0 18px; }
@@ -501,7 +502,7 @@
   .now ul li { font-family: var(--mono); font-size: 12.5px; padding: 10px 0 10px 22px; border-bottom: 1px dashed var(--rule); color: var(--ink); position: relative; line-height: 1.5; }
   .now ul li::before { content:"▹"; position: absolute; left: 0; color: var(--accent); }
   .now ul li.done { color: var(--ink-dim); }
-  .now ul li.done::before { content:"✓"; color: var(--accent-2); }
+  .now ul li.done::before { content:"✓"; color: var(--success); }
   .now .stat { display: inline-flex; align-items: center; gap: 10px; font-family: var(--mono); font-size: 11px; color: var(--ink-dim); letter-spacing: 0.14em; text-transform: uppercase; margin-top: 22px; border: 1px solid var(--rule); padding: 8px 12px; border-radius: 999px; }
   .now .stat .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent); animation: pulse 1.6s infinite; }
 

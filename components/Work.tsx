@@ -18,7 +18,7 @@ export default function Work() {
           <Link
             key={w.n}
             className="case reveal"
-            href="#contact"
+            href="#start"
             data-cursor="Inquire"
           >
             <div className="idx">{w.n}</div>

@@ -1,31 +1,10 @@
 'use client'
 import { useState } from 'react'
 
-const SERVICES = [
-  'Paid media', 'AI agents', 'Marketing automation', 'SEO',
-  'Analytics / tracking', 'Lead gen systems', 'Full retainer', 'Not sure yet',
-]
-
-function fmtBudget(n: number) {
-  if (n >= 2500000) return '₹25L+'
-  if (n >= 100000) return '₹' + (n / 100000).toFixed(n % 100000 === 0 ? 0 : 1) + 'L'
-  return '₹' + Math.round(n / 1000) + 'K'
-}
-
 export default function LeadForm() {
-  const [selected, setSelected] = useState<Set<string>>(new Set())
-  const [budget, setBudget] = useState(200000)
   const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
   const [errMsg, setErrMsg] = useState('')
   const [firstName, setFirstName] = useState('')
-
-  function toggleChip(v: string) {
-    setSelected(prev => {
-      const next = new Set(prev)
-      next.has(v) ? next.delete(v) : next.add(v)
-      return next
-    })
-  }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -51,10 +30,6 @@ export default function LeadForm() {
           email,
           company: data.get('company') || undefined,
           role: data.get('role') || undefined,
-          services: [...selected].join(', ') || undefined,
-          sector: data.get('sector') || undefined,
-          timeline: data.get('timeline') || undefined,
-          budget: fmtBudget(budget),
           message: data.get('message') || undefined,
         }),
       })
@@ -106,73 +81,12 @@ export default function LeadForm() {
       </div>
 
       <div className="field">
-        <label>What do you need help with? <span className="req">choose any</span></label>
-        <div className="chips">
-          {SERVICES.map(s => (
-            <button
-              key={s}
-              type="button"
-              className={`chip${selected.has(s) ? ' on' : ''}`}
-              onClick={() => toggleChip(s)}
-            >
-              {s}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="row-2">
-        <div className="field">
-          <label htmlFor="lf-sector">Sector</label>
-          <select id="lf-sector" name="sector">
-            <option value="">Select…</option>
-            <option>Hospitality</option>
-            <option>Education</option>
-            <option>Real Estate</option>
-            <option>SaaS / AI</option>
-            <option>E-commerce</option>
-            <option>Other</option>
-          </select>
-        </div>
-        <div className="field">
-          <label htmlFor="lf-timeline">Timeline</label>
-          <select id="lf-timeline" name="timeline">
-            <option value="">Select…</option>
-            <option>ASAP (this month)</option>
-            <option>Next 1–2 months</option>
-            <option>This quarter</option>
-            <option>Just exploring</option>
-          </select>
-        </div>
-      </div>
-
-      <div className="field budget">
-        <label htmlFor="lf-budget">
-          Monthly budget · <span className="out">{fmtBudget(budget)}</span>
-        </label>
-        <div className="rail">
-          <span className="note">₹50K</span>
-          <input
-            id="lf-budget"
-            name="budget"
-            type="range"
-            min={50000}
-            max={2500000}
-            step={25000}
-            value={budget}
-            onChange={e => setBudget(Number(e.target.value))}
-          />
-          <span className="note">₹25L+</span>
-        </div>
-      </div>
-
-      <div className="field">
-        <label htmlFor="lf-msg">The problem, in a few lines</label>
-        <textarea id="lf-msg" name="message" rows={3} placeholder="What are you trying to fix, ship, or grow?" />
+        <label htmlFor="lf-msg">What are you trying to fix, ship, or grow? <span className="req">*</span></label>
+        <textarea id="lf-msg" name="message" rows={4} placeholder="Give me the short version — I'll ask the right questions in my reply." required />
       </div>
 
       <div className="btn-row">
-        <span className="note" style={{ color: errMsg ? 'var(--accent-2)' : undefined }}>
+        <span className="note" style={{ color: errMsg ? '#ef4444' : undefined }}>
           {errMsg || '◊ Your info stays between us. No newsletter, no sales funnel.'}
         </span>
         <button className="submit" type="submit" data-cursor="Send" disabled={status === 'sending'}>
