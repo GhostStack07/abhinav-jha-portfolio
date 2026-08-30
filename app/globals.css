@@ -295,17 +295,24 @@
     font-family: var(--mono); font-size: 10px; letter-spacing: 0.2em; color: var(--ink-dim); text-transform: uppercase; z-index: 9;
   }
   .portrait-cinematic .portrait-stamp .nm { color: var(--accent); letter-spacing: 0.28em; }
+  /* Ticker: outer = overflow clip + bg; inner track = animated by its own content width */
   .portrait-cinematic .portrait-ticker {
-    position: absolute; left: 0; right: 0; bottom: 0; overflow: hidden; border-top: 1px solid color-mix(in oklab, var(--rule) 80%, transparent);
+    position: absolute; left: 0; right: 0; bottom: 0; overflow: hidden;
+    border-top: 1px solid color-mix(in oklab, var(--rule) 80%, transparent);
     background: linear-gradient(180deg, transparent, rgba(0,0,0,0.5)); backdrop-filter: blur(4px);
-    padding: 10px 0; font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.16em; color: var(--ink-dim); text-transform: uppercase;
-    white-space: nowrap; z-index: 6;
-    display: flex; gap: 28px; animation: portTicker 22s linear infinite;
+    padding: 10px 0; font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.16em;
+    color: var(--ink-dim); text-transform: uppercase; white-space: nowrap; z-index: 6;
   }
   [data-theme="light"] .portrait-cinematic .portrait-ticker { background: linear-gradient(180deg, transparent, rgba(255,255,255,0.4)); }
-  .portrait-cinematic .portrait-ticker span { display: inline-flex; gap: 10px; padding-left: 14px; color: var(--ink); }
-  .portrait-cinematic .portrait-ticker span:first-child { padding-left: 28px; }
-  @keyframes portTicker { to { transform: translateX(-50%); } }
+  .portrait-cinematic .portrait-ticker-track {
+    display: inline-flex; gap: 0; width: max-content;
+    animation: portTicker 22s linear infinite;
+  }
+  .portrait-cinematic .portrait-ticker span {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 0 24px; color: var(--ink);
+  }
+  @keyframes portTicker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
   .portrait-cinematic::after {
     content: ""; position: absolute; left: 0; right: 0; top: -20%; height: 3px;
     background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--accent) 80%, transparent), transparent);

@@ -62,14 +62,16 @@ export default function Hero() {
             </div>
             <span className="tag">Operator · Online</span>
             <div className="portrait-ticker" aria-hidden="true">
-              <span>◊ 42× ROAS</span>
-              <span>◊ INR 90L+</span>
-              <span>◊ 4 AI AGENTS</span>
-              <span>◊ 30+ TEAM</span>
-              <span>◊ 42× ROAS</span>
-              <span>◊ INR 90L+</span>
-              <span>◊ 4 AI AGENTS</span>
-              <span>◊ 30+ TEAM</span>
+              <div className="portrait-ticker-track">
+                <span>◊ 42× ROAS</span>
+                <span>◊ INR 90L+</span>
+                <span>◊ 4 AI AGENTS</span>
+                <span>◊ 30+ TEAM</span>
+                <span>◊ 42× ROAS</span>
+                <span>◊ INR 90L+</span>
+                <span>◊ 4 AI AGENTS</span>
+                <span>◊ 30+ TEAM</span>
+              </div>
             </div>
           </div>
         </div>
