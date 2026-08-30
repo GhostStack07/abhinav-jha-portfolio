@@ -3,11 +3,10 @@ import { STACK } from '@/lib/data'
 export default function Stack() {
   return (
     <section id="stack" className="sec">
-      <div className="sec-label reveal">
-        <span className="n">04 —</span>
-        <span className="title">Stack</span>
-      </div>
-      <h2 className="sec-title reveal">The <i>toolchain</i> I run on.</h2>
+      <p className="stack-intro reveal">
+        <span className="si-num">04</span>
+        <span>The toolchain I run on — <i>no fluff, no buzzwords.</i></span>
+      </p>
 
       <div className="stack reveal">
         {STACK.map(s => (

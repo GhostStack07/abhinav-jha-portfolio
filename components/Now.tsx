@@ -12,14 +12,6 @@ export default function Now() {
 
   return (
     <section id="now" className="sec">
-      <div className="sec-label reveal">
-        <span className="n">05 —</span>
-        <span className="title">Now</span>
-      </div>
-      <h2 className="sec-title reveal">
-        What I&apos;m <i>actually</i> doing this quarter.
-      </h2>
-
       <div className="now reveal">
         <div>
           <h3>April 2026 — operating from <i>Delhi NCR</i>.</h3>

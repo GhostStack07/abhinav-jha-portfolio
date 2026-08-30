@@ -4,14 +4,11 @@ import { WORK } from '@/lib/data'
 export default function Work() {
   return (
     <section id="work" className="sec">
-      <div className="sec-label reveal">
-        <span className="n">02 —</span>
-        <span className="title">Selected Work</span>
+      <div className="work-header reveal">
+        <span className="wh-num">02</span>
+        <span className="wh-label">Selected Work</span>
+        <span className="wh-meta">{WORK.length} cases · campaigns, agents & systems</span>
       </div>
-      <h2 className="sec-title reveal">
-        Campaigns, <i>agents</i>,<br />
-        and <span className="hl">operating systems</span> shipped.
-      </h2>
 
       <div className="work">
         {WORK.map(w => (
