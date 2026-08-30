@@ -18,17 +18,17 @@ export default function Hero() {
             <span className="hl">like&nbsp;software.</span>
           </h1>
           <p className="hero-lede" style={{ marginTop: 40 }}>
-            I&apos;m <em>Abhinav</em> — a senior digital marketer with 7+ years running performance
-            marketing, automation, and AI-driven campaigns across hospitality, schools, and real estate.
-            I&apos;ve built and shipped <em>4 production AI agents</em>, automated the manual out of
-            agency ops, and delivered campaigns up to <em>42× ROAS</em>.
+            I&apos;m <em>Abhinav</em> — a senior digital marketer with <span className="kpi">7+ years</span>{' '}running
+            performance marketing, automation, and AI-driven campaigns across hospitality, schools, and real estate.
+            I&apos;ve built and shipped <em><span className="kpi">4</span> production AI agents</em>, automated the manual out of
+            agency ops, and delivered campaigns up to <em><span className="kpi">42× ROAS</span></em>.
           </p>
           <div className="hero-cta">
             <Link className="btn primary" href="#contact" data-cursor="Say hi">
               Start a project <span className="arr">↗</span>
             </Link>
-            <Link className="btn" href="#work" data-cursor="View">
-              See selected work
+            <Link className="btn-text" href="#work" data-cursor="View">
+              See selected work →
             </Link>
           </div>
           <div className="hero-meta" style={{ marginTop: 48 }}>
